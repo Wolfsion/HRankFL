@@ -6,7 +6,7 @@ from typing import List
 import random
 import torch
 
-from control.dsets import *
+from control.preEnv import *
 from data.dataProvider import get_data
 
 @deprecated(version='0.1', reason="This class or function is not perfect")

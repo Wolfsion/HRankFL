@@ -1,4 +1,5 @@
 from enum import Enum, unique
+from vlogger import VLogger
 
 # dataset type
 @unique
@@ -9,6 +10,25 @@ class DataSetType(Enum):
     ImageNet = 3
     FEMNIST = 4
     UPPER = 5
+
+# Model Type
+@unique
+class ModelType(Enum):
+    LOWWER = 0
+    VGG = 1
+    RESNET = 2 
+    LANET = 3
+    UPPER = 4
+
+# Uniform const
+CPU = -6
+GPU = -66
+CPU_STR_LEN = 3
+INIT_LR = 0.1
+LR_HALF_LIFE = 10000
+
+GLOBAL_LOGGER_PATH = "logs/hrankFL.log"
+GLOBAL_LOGGER = VLogger(GLOBAL_LOGGER_PATH).logger
 
 # CIFAR10 const config
 CIFAR10_CLASSES = 10
