@@ -6,6 +6,7 @@ from torch.optim.optimizer import Optimizer
 from torch.nn.functional import binary_cross_entropy_with_logits
 
 from control.preEnv import *
+from model import vdevice
 
 class SGD(optim.SGD):
     @torch.no_grad()
@@ -70,11 +71,17 @@ class SGD(optim.SGD):
                 del state["momentum_buffer"]
 
 
-class VWraper():
+class VWrapper():
     def __init__(self, model: nn.Module, loss = binary_cross_entropy_with_logits,
-                    optim: Optimizer = None, scheduler = None) -> None:
+                    optim: Optimizer = None, scheduler = None, 
+                    device:vdevice.VADevice = None) -> None:
         self.model = model
         self.loss_func = loss
+        self.device = device
+        if device == None:
+            self.device = vdevice.VADevice(True, [0])
+        self.device.bind_model(self.model)
+        
         if optim == None:
             self.use_default_optim()
         else:
@@ -88,16 +95,25 @@ class VWraper():
 
     def step(self, inputs, labels):
         self.zero_grad()
-
+        self.model.train()
+        self.device.on_tensor(inputs, labels)
         pred = self.model(inputs)
         loss = self.loss_func(pred, labels)
         loss.backward()
-
         return self.optimizer.step()
 
     def step_eva(self, inputs, labels):
-        
-        pass
+        self.model.eval()
+        test_loss = 0
+        correct = 0
+        inputs, labels = self.device.on_tensor(inputs, labels)
+        pred = self.model(inputs)
+        loss = self.loss_func(pred, labels)
+        test_loss = 0
+        test_loss += loss.item()
+        _, predicted = pred.max(1)
+        correct += predicted.eq(labels).sum().item()
+        return test_loss, correct
 
     def zero_grad(self):
         self.model.zero_grad()
@@ -111,4 +127,4 @@ class VWraper():
             return self.optimizer.defaults["lr"]
         else:
             return self.lr_scheduler.get_last_lr()[0]
-    
+

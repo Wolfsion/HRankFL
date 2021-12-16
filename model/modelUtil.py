@@ -46,4 +46,4 @@ def model_device(model: nn.Module):
         return GPU
     else:
         return CPU
-    
+      

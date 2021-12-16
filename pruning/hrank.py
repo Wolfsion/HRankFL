@@ -3,57 +3,25 @@ import numpy as np
 import os
 import torch
 import torch.nn as nn
+import torch.utils.data as tdata
 
 from control.preEnv import *
 import control.runtimeEnv as args
-
-
-criterion = nn.CrossEntropyLoss()
-feature_result = torch.tensor(0.)
-total = torch.tensor(0.)
-
-#get feature map of certain layer via hook
-
-
-def inference():
-    global best_acc
-    net.eval()
-    test_loss = 0
-    correct = 0
-    total = 0
-    limit = args.limit
-
-    with torch.no_grad():
-        for batch_idx, (inputs, targets) in enumerate(train_loader):
-            #use the first 5 batches to estimate the rank.
-            if batch_idx >= limit:
-               break
-
-            inputs, targets = inputs.to(device), targets.to(device)
-
-            outputs = net(inputs)
-            loss = criterion(outputs, targets)
-
-            test_loss += loss.item()
-            _, predicted = outputs.max(1)
-            total += targets.size(0)
-            correct += predicted.eq(targets).sum().item()
-
-            utils.progress_bar(batch_idx, limit, 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
-                % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))#'''
+from model.vwrapper import VWrapper
 
 class HRank(ABC):
     ERROR_MESS1 = "illegal mType(int)"
     feature_result = torch.tensor(0.)
     total = torch.tensor(0.)
 
-    def __init__(self, mType, model) -> None:
-        assert mType > ModelType.LOWWER, self.ERROR_MESS1
-        assert mType < ModelType.UPPER, self.ERROR_MESS1
+    def __init__(self, mType: int, model: nn.Module) -> None:
+        assert mType > ModelType.LOWWER.value, self.ERROR_MESS1
+        assert mType < ModelType.UPPER.value, self.ERROR_MESS1
         self.mType = mType
         self.model = model
 
-    def get_feature_hook(self, input, output):
+    #get feature map of certain layer via hook
+    def get_feature_hook(self, module, input, output):
         imgs = output.shape[0]
         channels = output.shape[1]
         ranks = torch.tensor([torch.matrix_rank(output[i,j,:,:]).item() 
@@ -63,24 +31,28 @@ class HRank(ABC):
         # merge channel rank of all imgs
         ranks = ranks.sum(0)
 
-        feature_result = self.feature_result * self.total + ranks
-        total = self.total + imgs
-        feature_result = feature_result / total
+        self.feature_result = self.feature_result * self.total + ranks
+        self.total = self.total + imgs
+        self.feature_result = self.feature_result / self.total
 
     @abstractmethod
-    def getRank():
+    def feed_run(self, loader: tdata.DataLoader):
         pass
+
     @abstractmethod
-    def getMask():
+    def get_rank(self, loader: tdata.DataLoader):
+        pass
+
+    @abstractmethod
+    def get_mask(self):
         pass
 
 class VGG16HRank(HRank):
-    def getRank(self):
-        pass
-    def getMask(self):
-        pass
+    def __init__(self, mType: int, model: nn.Module) -> None:
+        super().__init__(mType, model)
+        self.wrapper = VWrapper(model)
 
-    def refernece(self):
+    def get_rank(self, loader):
         if len(args.gpu) > 1:
             relucfg = self.model.module.relucfg
         else:
@@ -88,13 +60,38 @@ class VGG16HRank(HRank):
 
         for i, cov_id in enumerate(relucfg):
             cov_layer = self.model.features[cov_id]
-            handler = cov_layer.register_forward_hook(get_feature_hook)
-            inference()
+            handler = cov_layer.register_forward_hook(self.get_feature_hook)
+            self.feed_run(loader)
             handler.remove()
 
-            if not os.path.isdir('rank_conv/'+args.arch+'_limit%d'%(args.limit)):
-                os.mkdir('rank_conv/'+args.arch+'_limit%d'%(args.limit))
-            np.save('rank_conv/'+args.arch+'_limit%d'%(args.limit)+'/rank_conv' + str(i + 1) + '.npy', feature_result.numpy())
+            if not os.path.isdir('ranks/'+args.arch+'_limit%d'%(args.limit)):
+                os.mkdir('ranks/'+args.arch+'_limit%d'%(args.limit))
+            np.save('ranks/'+args.arch+'_limit%d'%(args.limit)+'/ranks' + str(i + 1) + '.npy', self.feature_result.numpy())
 
-            feature_result = torch.tensor(0.)
-            total = torch.tensor(0.)
+            self.feature_result = torch.tensor(0.)
+            self.total = torch.tensor(0.)
+    
+    def get_mask(self):
+        pass
+
+    def feed_run(self, loader: tdata.DataLoader):
+        self.model.eval()
+        test_loss = 0
+        correct = 0
+        total = 0
+        limit = args.limit
+
+        with torch.no_grad():
+            for batch_idx, (inputs, targets) in enumerate(loader):
+                #use the first 5 batches to estimate the rank.
+                if batch_idx >= limit:
+                    break
+
+                loss, cort = self.wrapper.step_eva(inputs, targets)
+                
+                test_loss += loss
+                correct += cort
+                total += targets.size(0)
+                
+                GLOBAL_LOGGER.info(batch_idx, 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
+                    % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
