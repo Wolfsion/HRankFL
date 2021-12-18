@@ -122,8 +122,8 @@ class NIIDSampler(LSampler):
 
 
 class CF10NIIDSampler(LSampler):
-    def __init__(self, datatype, num_slices, num_round, data_per_client,
-                 client_selection, client_per_round = None, seed = 1):
+    def __init__(self, num_slices, num_round, data_per_client,
+                 client_selection, client_per_round = None, seed = 1, datatype = 1):
         self.seed = seed
         super().__init__(datatype, num_slices, num_round, data_per_client,
                         client_selection, client_per_round)

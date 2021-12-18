@@ -64,3 +64,58 @@ class RankGenParser(Parser):
         
         pass
         
+class PruningFLParser(Parser):
+    def parse(self):
+        parser = argparse.ArgumentParser()
+        mutex = parser.add_mutually_exclusive_group(required=True)
+        mutex.add_argument('-a', '--adaptive',
+                        help="Use adaptive pruning",
+                        action='store_true',
+                        dest='use_adaptive')
+        mutex.add_argument('-na', '--no-adaptive',
+                        help="Do not use adaptive pruning",
+                        action='store_false',
+                        dest='use_adaptive')
+
+        mutex1 = parser.add_mutually_exclusive_group(required=True)
+        mutex1.add_argument('-i', '--init-pruning',
+                            help="Use initial pruning",
+                            action='store_true',
+                            dest='initial_pruning')
+        mutex1.add_argument('-ni', '--no-init-pruning',
+                            help="Do not use initial pruning",
+                            action='store_false',
+                            dest='initial_pruning')
+
+        parser.add_argument('-c', '--client-selection',
+                            help="If use client-selection",
+                            action='store_true',
+                            dest='client_selection',
+                            default=False,
+                            required=False)
+        parser.add_argument('-t', '--target-density',
+                            help="Target density",
+                            action='store',
+                            dest='target_density',
+                            type=float,
+                            required=False)
+        parser.add_argument('-m', '--max-density',
+                            help="Max density",
+                            action='store',
+                            dest='max_density',
+                            type=float,
+                            required=False)
+        parser.add_argument('-s', '--seed',
+                            help="The seed to use for the prototype",
+                            action='store',
+                            dest='seed',
+                            type=int,
+                            default=0,
+                            required=False)
+        parser.add_argument('-e', '--exp-name',
+                            help="Experiment name",
+                            action='store',
+                            dest='experiment_name',
+                            type=str,
+                            required=True)
+        return parser.parse_args()        

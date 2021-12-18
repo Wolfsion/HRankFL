@@ -1,3 +1,6 @@
+import os
+import pickle
+import warnings
 import torch
 import torch.nn as nn
 from torch.nn.modules.instancenorm import LazyInstanceNorm1d
@@ -46,4 +49,22 @@ def model_device(model: nn.Module):
         return GPU
     else:
         return CPU
-      
+
+# load obj not only model: nn.Moudle      
+def mkdir_save(obj, f):
+    dir_name = os.path.dirname(f)
+    if dir_name != "":
+        os.makedirs(dir_name, exist_ok=True)
+
+    # disabling warnings from torch.Tensor's reduce function. See issue: https://github.com/pytorch/pytorch/issues/38597
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        with open(f, "wb") as opened_f:
+            pickle.dump(obj, opened_f)
+            opened_f.close()
+
+def pickle_load(f):
+    with open(f, "rb") as opened_f:
+        obj = pickle.load(opened_f)
+        opened_f.close()
+    return obj

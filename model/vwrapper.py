@@ -8,6 +8,9 @@ from torch.nn.functional import binary_cross_entropy_with_logits
 from control.preEnv import *
 from model import vdevice
 
+# 性能开销测量 profile(FLOPS, params)
+# 配置保存与加载
+
 class SGD(optim.SGD):
     @torch.no_grad()
     def step(self, closure=None):
@@ -96,7 +99,7 @@ class VWrapper():
     def step(self, inputs, labels):
         self.zero_grad()
         self.model.train()
-        self.device.on_tensor(inputs, labels)
+        inputs, labels = self.device.on_tensor(inputs, labels)
         pred = self.model(inputs)
         loss = self.loss_func(pred, labels)
         loss.backward()
@@ -112,7 +115,8 @@ class VWrapper():
         test_loss = 0
         test_loss += loss.item()
         _, predicted = pred.max(1)
-        correct += predicted.eq(labels).sum().item()
+        _,targets = labels.max(1)
+        correct += predicted.eq(targets).sum().item()
         return test_loss, correct
 
     def zero_grad(self):
@@ -128,3 +132,11 @@ class VWrapper():
         else:
             return self.lr_scheduler.get_last_lr()[0]
 
+    def performance_overhead(self):
+        pass
+
+    def store_config(self):
+        pass
+
+    def load_config(self):
+        pass

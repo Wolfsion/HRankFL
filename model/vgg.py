@@ -1,9 +1,9 @@
-
 import torch.nn as nn
 from collections import OrderedDict
 
 defaultcfg = [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512]
 relucfg = [2, 6, 9, 13, 16, 19, 23, 26, 29, 33, 36, 39, 42]
+
 
 class VGG(nn.Module):
     def __init__(self, compress_rate, cfg=None, num_classes=10):
@@ -45,3 +45,8 @@ class VGG(nn.Module):
         x = x.view(x.size(0), -1)
         x = self.classifier(x)
         return x
+
+    def origin_model():
+        pass
+    
+    origin_params:OrderedDict = origin_model()

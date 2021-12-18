@@ -3,3 +3,4 @@ logs/*
 results/*
 ranks/*
 testProc.py
+testLearn.py

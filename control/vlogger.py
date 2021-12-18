@@ -9,7 +9,7 @@ class VLogger():
 
     @property    
     def logger(self) -> logging.Logger:
-        logger = logging.getLogger('gal')
+        logger = logging.getLogger('wolfsion')
         log_format = '%(asctime)s | %(message)s'
         formatter = logging.Formatter(log_format, datefmt='%m/%d %I:%M:%S %p')
         file_handler = logging.FileHandler(self.file_path)
