@@ -20,15 +20,23 @@ class ModelType(Enum):
     LANET = 3
     UPPER = 4
 
+@unique
+class MessType(Enum):
+    LOWWER = 0
+    UPLOAD_STATIC_DICT = 1
+    DOWNLOAD_STATIC_DICT = -1
+    UPLOAD_RANK = 2
+    DOWNLOAD_RANK = -2
+    UPLOAD_PRUNING_RATE = 3
+    DOWNLOAD_PRUNING_RATE = -3
+    UPPER = 4
+
 # Uniform const
 CPU = -6
 GPU = -66
 CPU_STR_LEN = 3
 INIT_LR = 0.1
 LR_HALF_LIFE = 10000
-
-DATASETS_PATH = 'localSet'
-RANKS_PATH = 'ranks'
 
 # simulation
 NUM_LOCAL_UPDATES = 5
@@ -40,9 +48,7 @@ MAX_DEC_DIFF = 0.3
 ADJ_INTERVAL = 50
 ADJ_HALF_LIFE = 10000
 
-# Logger
-GLOBAL_LOGGER_PATH = "logs/hrankFL.log"
-GLOBAL_LOGGER = VLogger(GLOBAL_LOGGER_PATH).logger
+
 
 # CIFAR10 const config
 CIFAR10_NAME = "CIFAR10"
@@ -52,4 +58,8 @@ CIFAR10_MEAN = [0.4914, 0.4822, 0.4465]
 CIFAR10_STD = [0.2023, 0.1994, 0.2010]
 
 # VGG const config
-VGG_MODLE_PATH = 'results/vgg'
+
+
+# Logger
+GLOBAL_LOGGER_PATH = "logs/hrankFL.log"
+GLOBAL_LOGGER = VLogger(GLOBAL_LOGGER_PATH).logger

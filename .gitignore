@@ -5,3 +5,5 @@ ranks/*
 config.json
 testProc.py
 testLearn.py
+!.gitignore
+test.sh

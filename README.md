@@ -1,11 +1,8 @@
 # HRankFL
 
 ## 开始
-+ 创建localSet目录并提供内容
-+ 创建logs目录
-+ 创建ranks目录
-
-
++ localSet目录存放内容
++ results/vgg目录存放内容
 
 ## 架构
 
@@ -51,6 +48,7 @@ flowchart TB
 + model：原型模型参数类变量创建
 + autoParser：Json配置与解析
 + 注释补充与函数接口完善
++ args&runtimeEnv：command和json配置协调
 
 
 
