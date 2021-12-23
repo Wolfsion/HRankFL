@@ -1,6 +1,5 @@
 localSet/*
 logs/*
-results/*
 ranks/*
 config.json
 testProc.py

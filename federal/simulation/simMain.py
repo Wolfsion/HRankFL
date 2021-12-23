@@ -2,7 +2,7 @@ from abc import ABC, abstractclassmethod
 import os
 import torch
 from torch.optim import lr_scheduler
-from typing import OrderedDict
+from collections import OrderedDict
 
 from control.argParser import PruningFLParser
 from control.preEnv import *
@@ -19,8 +19,9 @@ def main():
     #       "Num users = {}. Seed = {}. Max round = {}. "
     #       "Target density = {}".format(CIFAR10_NAME, args.use_adaptive, args.initial_pruning, args.client_selection,
     #                                    workers, args.seed, MAX_ROUND, args.target_density))
-    exit()
-    fl_runner = CVHRun()
+    dic = {"a":1, "b":2}
+    args = argparse.Namespace(**dic)
+    fl_runner = CVHRun(args)
     fl_runner.workers[0].alg_obj.get_rank()
     ckpt = torch.load(file_repo.model_dir() + '', map_location='cuda:0')
 

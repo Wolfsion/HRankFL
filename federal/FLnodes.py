@@ -68,7 +68,7 @@ class FLMaster(ABC):
         self.save_interval = save_interval
 
         self.init_algorithm()
-        self.save_runtime_config()
+        self.save_exp_config()
         self.bridge = bridge
 
     @abstractmethod
@@ -76,7 +76,7 @@ class FLMaster(ABC):
         pass
 
     @abstractmethod
-    def save_runtime_config(self):
+    def save_exp_config(self):
         pass
 
     def send_mess(self, mess: FLMessage):

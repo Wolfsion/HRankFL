@@ -86,12 +86,13 @@ class VADevice():
             self.device = torch.device("cpu")
             self.last_choice = False
     
-    def bind_model(self, model: nn.Module):
+    def bind_model(self, model: nn.Module) -> nn.Module:
         self.model = model
         if self.last_choice:
-            self.to_gpu(self.model)
+            self.to_gpu()
         else:
-            self.to_cpu(self.model)
+            self.to_cpu()
+        return self.model
 
     def switch_device(self):
         if self.last_choice:

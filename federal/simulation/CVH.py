@@ -1,6 +1,6 @@
 import argparse
 from copy import deepcopy
-from typing import OrderedDict
+from collections import OrderedDict
 import torch
 from abc import ABC, abstractmethod
 from timeit import default_timer as timer
@@ -39,7 +39,8 @@ class CVHMaster(FLMaster):
                             "num_local_updates": NUM_LOCAL_UPDATES, "init_lr": INIT_LR,
                             "lrhl": LR_HALF_LIFE}
         args_config = vars(self.args)
-        configs = dict(exp_const_config.items() + args_config.items())
+        configs = exp_const_config.copy()
+        configs.update(args_config)
         modelUtil.mkdir_save(configs, file_repo.configs('exp_config.snap'))
 
     def distribute_dict():

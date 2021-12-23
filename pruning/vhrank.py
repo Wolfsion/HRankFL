@@ -10,7 +10,6 @@ import collections
 
 from control.preEnv import *
 from control.runtimeEnv import *
-import control.runtimeEnv as args
 from model.vwrapper import VWrapper
 
 class HRank(ABC):
@@ -56,16 +55,14 @@ class VGG16HRank(HRank):
         super().__init__(mType, model)
         self.wrapper = VWrapper(model)
         self.curt_sd = model.state_dict()
+        self.model = self.wrapper.model
+        self.exp_access = "self.model.module" if self.wrapper.device.GPUs else "self.model"
 
     def get_rank(self, loader):
-        
-        if len(args.gpu) > 1:
-            relucfg = self.model.module.relucfg
-        else:
-            relucfg = self.model.relucfg
+        relucfg = eval(self.exp_access).relucfg
 
         for i, cov_id in enumerate(relucfg):
-            cov_layer = self.model.features[cov_id]
+            cov_layer = eval(self.exp_access).features[cov_id]
             handler = cov_layer.register_forward_hook(self.get_feature_hook)
             self.feed_run(loader)
             handler.remove()
@@ -140,7 +137,6 @@ class VGG16HRank(HRank):
         test_loss = 0
         correct = 0
         total = 0
-        limit = args.limit
 
         with torch.no_grad():
             for batch_idx, (inputs, targets) in enumerate(loader):

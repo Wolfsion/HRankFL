@@ -6,6 +6,7 @@ from torch.optim.optimizer import Optimizer
 from torch.nn.functional import binary_cross_entropy_with_logits
 
 from control.preEnv import *
+from control.runtimeEnv import *
 from model import vdevice
 
 # 性能开销测量 profile(FLOPS, params)
@@ -82,8 +83,8 @@ class VWrapper():
         self.loss_func = loss
         self.device = device
         if device == None:
-            self.device = vdevice.VADevice(True, [0])
-        self.device.bind_model(self.model)
+            self.device = vdevice.VADevice(True, gpu)
+        self.model = self.device.bind_model(self.model)
         
         if optim == None:
             self.use_default_optim()
