@@ -1,4 +1,5 @@
 from typing import List
+from collections import OrderedDict
 import torch
 from torch import nn
 import logging
@@ -9,7 +10,7 @@ from control import vlogger
 # 设备、模型、张量动态绑定
 # SingleTon
 # path路径由底层直接维护
-class VDevice():
+class VDevice:
     CPU_STR_LEN = 3
     LOGGER_PATH = "logs/device_info.log"
     ERROR_MESS1 = "GPU is not available."
@@ -17,16 +18,16 @@ class VDevice():
     def __init__(self, gpu: True, ids: List = [0], logger: logging.Logger = None) -> None:
         self.flag = torch.cuda.is_available()
         self.dev_list = ids
-        if (logger == None):
+        if logger is None:
             self.logger = vlogger.VLogger(self.LOGGER_PATH).logger
         if gpu:
-            assert self.flag == True, self.ERROR_MESS1
+            assert self.flag is True, self.ERROR_MESS1
             self.device = torch.device("cuda:%d" % self.dev_list[0])
             self.last_choice = True
         else:
             self.device = torch.device("cpu")
             self.last_choice = False
-    
+
     def device_switch(self):
         if self.last_choice:
             self.device = torch.device("cpu")
@@ -41,7 +42,7 @@ class VDevice():
             model.to(self.device)
         else:
             model.to(self.device)
-    
+
     def to_cpu(self, model: torch.nn.Module):
         model.cpu()
 
@@ -62,30 +63,32 @@ class VDevice():
         else:
             self.to_gpu(model)
             self.logger.info("model will use gpu.")
- 
+
+
 # Auto config
-class VADevice():
+class VADevice:
     CPU_STR_LEN = 3
-    MODLE_PATH = "milestone"
     LOGGER_PATH = "logs/device_info.log"
     ERROR_MESS1 = "GPU is not available."
     ERROR_MESS2 = "Model must be not null."
+    PREFIX = "module."
 
     def __init__(self, gpu: True, ids: List = [0], logger: logging.Logger = None) -> None:
         self.flag = torch.cuda.is_available()
         self.dev_list = ids
-        self.model = None
-        self.GPUs = False
-        if (logger == None):
+        self.model: nn.Module = None
+        self.GPUs: bool = False
+        self.expression_access: str = None
+        if logger is None:
             self.logger = vlogger.VLogger(self.LOGGER_PATH).logger
         if gpu:
-            assert self.flag == True, self.ERROR_MESS1
+            assert self.flag is True, self.ERROR_MESS1
             self.device = torch.device("cuda:%d" % self.dev_list[0])
             self.last_choice = True
         else:
             self.device = torch.device("cpu")
             self.last_choice = False
-    
+
     def bind_model(self, model: nn.Module) -> nn.Module:
         self.model = model
         if self.last_choice:
@@ -103,7 +106,7 @@ class VADevice():
             self.last_choice = True
 
     def to_gpu(self):
-        assert self.model != None, self.ERROR_MESS2
+        assert self.model is not None, self.ERROR_MESS2
         if len(self.dev_list) > 1:
             self.model = nn.DataParallel(self.model, device_ids=self.dev_list)
             self.model.to(self.device)
@@ -111,11 +114,11 @@ class VADevice():
         else:
             self.model.to(self.device)
             self.GPUs = False
-        if self.last_choice == False:
+        if self.last_choice is False:
             self.switch_device()
-    
+
     def to_cpu(self):
-        assert self.model != None, self.ERROR_MESS2
+        assert self.model is not None, self.ERROR_MESS2
         self.model.cpu()
         self.GPUs = False
         if self.last_choice:
@@ -125,24 +128,34 @@ class VADevice():
         for t in tensors:
             yield t.to(self.device)
 
-    def save_model(self, path):
-        assert self.model != None, self.ERROR_MESS2
+    def access_model(self) -> nn.Module:
+        self.expression_access = "self.model.module" if self.GPUs else "self.model"
+        return eval(self.expression_access)
+
+    def save_model(self, path: str):
+        assert self.model is not None, self.ERROR_MESS2
         if self.dev_list > 1:
             torch.save(self.model.module.state_dict(), path)
         else:
             torch.save(self.model.state_dict(), path)
 
-    def load_model(self, path):
-        assert self.model != None, self.ERROR_MESS2
-        self.model.load_state_dict(torch.load(path))
+    def load_model(self, path: str):
+        assert self.model is not None, self.ERROR_MESS2
+        state_dict = torch.load(path)
+        adapt_dict = OrderedDict()
+        if self.GPUs:
+            if self.PREFIX not in state_dict.keys()[0]:
+                for k, v in state_dict.items():
+                    adapt_dict[self.PREFIX + k] = v
+        else:
+            if self.PREFIX in state_dict.keys()[0]:
+                for k, v in state_dict.items():
+                    adapt_dict[k.replace(self.PREFIX, '', 1)] = v
+        self.model.load_state_dict(adapt_dict)
 
-    def direct_load_model():
+    def direct_load_model(self):
         pass
 
-    def direct_save_model():
+    def direct_save_model(self):
         pass
 
-    def save_checkpoint():
-        pass
-    def load_checkpoint():
-        pass

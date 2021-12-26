@@ -1,7 +1,6 @@
 localSet/*
 logs/*
 ranks/*
-config.json
 testProc.py
 testLearn.py
 !.gitignore

@@ -22,12 +22,8 @@ def main():
     dic = {"a":1, "b":2}
     args = argparse.Namespace(**dic)
     fl_runner = CVHRun(args)
-    fl_runner.workers[0].alg_obj.get_rank()
-    ckpt = torch.load(file_repo.model_dir() + '', map_location='cuda:0')
-
-    sd = OrderedDict()
-    for k, v in ckpt['state_dict'].items():
-        sd[k.replace('module.', '')] = v
-    fl_runner.workers[0].alg_obj.load_params(sd)
+    fl_runner.download_dict()
+    fl_runner.download_cp_rate()
+    fl_runner.upload_download_ranks()
 
     

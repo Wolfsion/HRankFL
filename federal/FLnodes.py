@@ -1,19 +1,15 @@
 import argparse
-from copy import deepcopy
-import torch.nn as nn
 from abc import ABC, abstractmethod
-from timeit import default_timer as timer
 from typing import List
 
-from federal.FLbase import *
 from control.pathHandler import *
 from federal.Message import *
 from data.dataProvider import DataLoader
 
-from control.preEnv import *
 from control.runtimeEnv import *
 
-class FLSimNet():
+
+class FLSimNet:
     ERROR_MESS1 = "Current buffer is null."
     ERROR_MESS2 = "Message in buffer is mismatching."
 
@@ -24,7 +20,7 @@ class FLSimNet():
         self.workers = workers
         self.read = 0
         self.written = 0
-    
+
     def curt_status(self) -> int:
         return self.curt_index
 
@@ -35,7 +31,7 @@ class FLSimNet():
         self.buffer.pop()
         self.curt_index -= 1
         return curt
-  
+
     def m_produce(self, mess: FLMessage):
         self.buffer.append(deepcopy(mess))
         self.curt_index += 1
@@ -48,9 +44,9 @@ class FLSimNet():
         if self.readen == self.workers:
             self.curt_index -= 1
             self.buffer.pop()
-            self.readen = 0
+            self.read = 0
         return curt
-  
+
     def w_produce(self, mess: FLMessage):
         self.tmp.append(deepcopy(mess))
         self.written += 1
@@ -59,11 +55,13 @@ class FLSimNet():
             self.buffer.append(self.tmp)
             self.written = 0
 
+
 default_bridge = FLSimNet()
 
+
 class FLMaster(ABC):
-    def __init__(self, args: argparse.Namespace, 
-                    bridge: FLSimNet = default_bridge, save_interval = 50):
+    def __init__(self, args: argparse.Namespace,
+                 bridge: FLSimNet = default_bridge, save_interval=50):
         self.args = args
         self.save_interval = save_interval
 
@@ -82,11 +80,12 @@ class FLMaster(ABC):
     def send_mess(self, mess: FLMessage):
         self.bridge.m_produce(mess)
 
-    def recv_mess(self, mess: FLMessage):
-        self.bridge.m_consume(mess)
+    def recv_mess(self) -> List[FLMessage]:
+        return self.bridge.m_consume()
+
 
 class FLWorker(ABC):
-    def __init__(self, bridge: FLSimNet = default_bridge):
+    def __init__(self, model: nn.Module, bridge: FLSimNet = default_bridge):
         self.loader: DataLoader = None
         self.init_loader()
         self.init_algorithm()
@@ -99,9 +98,9 @@ class FLWorker(ABC):
     @abstractmethod
     def init_algorithm(self):
         pass
-    
+
     def send_mess(self, mess: FLMessage):
         self.bridge.w_produce(mess)
 
-    def recv_mess(self, mess: FLMessage):
-        self.bridge.w_consume(mess)
+    def recv_mess(self) -> FLMessage:
+        return self.bridge.w_consume()

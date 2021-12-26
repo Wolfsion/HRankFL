@@ -9,6 +9,7 @@ from control.preEnv import *
 from control.runtimeEnv import *
 from model import vdevice
 
+
 # 性能开销测量 profile(FLOPS, params)
 # 配置保存与加载
 
@@ -75,18 +76,20 @@ class SGD(optim.SGD):
                 del state["momentum_buffer"]
 
 
-class VWrapper():
-    def __init__(self, model: nn.Module, loss = binary_cross_entropy_with_logits,
-                    optim: Optimizer = None, scheduler = None, 
-                    device:vdevice.VADevice = None) -> None:
+class VWrapper:
+    ERROR_MESS1 = "Checkpoint do not find model_key attribute"
+
+    def __init__(self, model: nn.Module, loss=binary_cross_entropy_with_logits,
+                 optim: Optimizer = None, scheduler=None,
+                 device: vdevice.VADevice = None) -> None:
         self.model = model
         self.loss_func = loss
         self.device = device
-        if device == None:
+        if device is None:
             self.device = vdevice.VADevice(True, gpu)
         self.model = self.device.bind_model(self.model)
-        
-        if optim == None:
+
+        if optim is None:
             self.use_default_optim()
         else:
             self.optimizer = optim
@@ -94,7 +97,7 @@ class VWrapper():
 
     def use_default_optim(self):
         self.optimizer = SGD(self.model.parameters(), lr=INIT_LR)
-        self.lr_scheduler= lr_scheduler.StepLR(self.optimizer, step_size=1, 
+        self.lr_scheduler = lr_scheduler.StepLR(self.optimizer, step_size=1,
                                                 gamma=0.5 ** (1 / LR_HALF_LIFE))
 
     def step(self, inputs, labels):
@@ -116,7 +119,7 @@ class VWrapper():
         test_loss = 0
         test_loss += loss.item()
         _, predicted = pred.max(1)
-        _,targets = labels.max(1)
+        _, targets = labels.max(1)
         correct += predicted.eq(targets).sum().item()
         return test_loss, correct
 
@@ -133,11 +136,24 @@ class VWrapper():
         else:
             return self.lr_scheduler.get_last_lr()[0]
 
+    def access_model(self) -> nn.Module:
+        return self.device.access_model()
+
     def performance_overhead(self):
         pass
 
-    def store_config(self):
+    def save_checkpoint(self):
+        # exp_const_config = {"exp_name": CIFAR10_NAME, "batch_size": CLIENT_BATCH_SIZE,
+        #                     "num_local_updates": NUM_LOCAL_UPDATES, "init_lr": INIT_LR,
+        #                     "lrhl": LR_HALF_LIFE}
+        # args_config = vars(self.args)
+        # configs = exp_const_config.copy()
+        # configs.update(args_config)
+        # modelUtil.mkdir_save(configs, file_repo.configs('exp_config.snap'))
         pass
 
-    def load_config(self):
-        pass
+    # !
+    def load_checkpoint(self, path: str, model_key: str = 'state_dict'):
+        checkpoint = torch.load(path)
+        assert model_key in checkpoint.keys(), self.ERROR_MESS1
+        self.device.load_model(checkpoint[model_key])
