@@ -67,7 +67,7 @@ class VGG16HRank(HRank):
         self.cp_model_sd = None
 
     def get_rank(self, loader):
-        for cov_id in enumerate(self.relu_cfg):
+        for cov_id in self.relu_cfg:
             cov_layer = self.wrapper.device.access_model().features[cov_id]
             handler = cov_layer.register_forward_hook(self.get_feature_hook)
             self.feed_run(loader)

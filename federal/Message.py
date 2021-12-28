@@ -28,7 +28,7 @@ class FLMessage:
     def run(self, master=True, *args, **kwargs):
         if self.func is None:
             name_base = "op" if self.mess.value > 0 else "op_"
-            fun_name = name_base + self.mess.value
+            fun_name = name_base + str(self.mess.value)
             self.func = getattr(self, fun_name, self.op_default)
         self.func(master, *args, **kwargs)
 
@@ -47,6 +47,7 @@ class FLMessage:
             assert 'state_dict' in self.content.keys(), self.ERROR_MESS3
             assert 'alg' in kwargs.keys(), self.ERROR_MESS2
             kwargs['alg'].model.load_state_dict(self.content['state_dict'])
+            kwargs['alg'].get_rank(kwargs['loader'])
 
     def op2(self, master=True, *args, **kwargs):
         if master:

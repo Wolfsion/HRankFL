@@ -85,7 +85,7 @@ class FLMaster(ABC):
 
 
 class FLWorker(ABC):
-    def __init__(self, model: nn.Module, bridge: FLSimNet = default_bridge):
+    def __init__(self, bridge: FLSimNet = default_bridge):
         self.loader: DataLoader = None
         self.init_loader()
         self.init_algorithm()

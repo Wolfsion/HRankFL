@@ -71,6 +71,7 @@ class VADevice:
     LOGGER_PATH = "logs/device_info.log"
     ERROR_MESS1 = "GPU is not available."
     ERROR_MESS2 = "Model must be not null."
+    ERROR_MESS3 = "Args must be path(str) or dict."
     PREFIX = "module."
 
     def __init__(self, gpu: True, ids: List = [0], logger: logging.Logger = None) -> None:
@@ -139,16 +140,22 @@ class VADevice:
         else:
             torch.save(self.model.state_dict(), path)
 
-    def load_model(self, path: str):
+    def load_model(self, path_or_dic):
         assert self.model is not None, self.ERROR_MESS2
-        state_dict = torch.load(path)
+        if isinstance(path_or_dic, str):
+            state_dict = torch.load(path_or_dic).state_dict()
+        elif isinstance(path_or_dic, dict):
+            state_dict = path_or_dic
+        else:
+            assert False, self.ERROR_MESS3
         adapt_dict = OrderedDict()
+        load_model_gpus = self.PREFIX in list(state_dict.keys())[0]
         if self.GPUs:
-            if self.PREFIX not in state_dict.keys()[0]:
+            if not load_model_gpus:
                 for k, v in state_dict.items():
                     adapt_dict[self.PREFIX + k] = v
         else:
-            if self.PREFIX in state_dict.keys()[0]:
+            if load_model_gpus:
                 for k, v in state_dict.items():
                     adapt_dict[k.replace(self.PREFIX, '', 1)] = v
         self.model.load_state_dict(adapt_dict)

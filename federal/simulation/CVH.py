@@ -27,7 +27,7 @@ class CVHMaster(FLMaster):
 
     # ! pruning_rate hyper obtain
     def init_algorithm(self):
-        self.wrapper.load_checkpoint(file_repo.model())
+        self.wrapper.load_checkpoint(file_repo.model(fixed=True))
         self.pruning_rate = [0.45]*7 + [0.78]*5
 
     # ! replace by wrapper.method()
@@ -64,7 +64,7 @@ class CVHWorker(FLWorker):
     def __init__(self, model: nn.Module):
         self.model = model
         self.alg_obj = None
-        super().__init__(model)
+        super().__init__()
         self.alg_obj.model.train()
         self.rank = None
 
@@ -73,11 +73,10 @@ class CVHWorker(FLWorker):
 
     def init_algorithm(self):
         self.alg_obj = VGG16HRank(self.model)
-        self.alg_obj.get_rank(self.loader)
 
     def fetch_dict(self):
         mess = self.recv_mess()
-        mess.run(False, alg=self.alg_obj)
+        mess.run(False, alg=self.alg_obj, loader=self.loader)
 
     def fetch_cp_rate(self):
         mess = self.recv_mess()
@@ -97,8 +96,10 @@ class CVHWorker(FLWorker):
 class CVHRun:
     def __init__(self, args: argparse.Namespace) -> None:
         self.pipe = FLSimNet()
-        self.master = CVHMaster(args)
-        self.workers = [CVHWorker() for _ in range(workers)]
+        self.model = modelUtil.vgg_16_bn(ORIGIN_CP_RATE)
+        self.models = [modelUtil.vgg_16_bn(ORIGIN_CP_RATE) for _ in range(workers)]
+        self.master = CVHMaster(args, self.model)
+        self.workers = [CVHWorker(self.models[i]) for i in range(workers)]
 
     def download_dict(self):
         self.master.distribute_dict()

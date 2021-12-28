@@ -19,7 +19,7 @@ def main():
     #       "Num users = {}. Seed = {}. Max round = {}. "
     #       "Target density = {}".format(CIFAR10_NAME, args.use_adaptive, args.initial_pruning, args.client_selection,
     #                                    workers, args.seed, MAX_ROUND, args.target_density))
-    dic = {"a":1, "b":2}
+    dic = {"a": 1, "b": 2}
     args = argparse.Namespace(**dic)
     fl_runner = CVHRun(args)
     fl_runner.download_dict()

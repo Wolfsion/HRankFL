@@ -2,13 +2,15 @@ from abc import ABC, abstractclassmethod
 import os
 import time
 
+
 class PathGather(ABC):
     ERROR_MESS1 = "Given directory doesn't exists."
+
     def __init__(self, model, dataset) -> None:
-        self.mpath:str = model
-        self.dpath:str = dataset
+        self.mpath: str = model
+        self.dpath: str = dataset
         self.config_dir = 'configs'
-    
+
     @abstractclassmethod
     def model_dir(self):
         pass
@@ -32,25 +34,32 @@ class PathGather(ABC):
     def checkout(self, path: str):
         return os.path.isdir(path)
 
+
+def curt_time_stamp():
+    pattern = '%Y.%m.%d_%H-%M-%S'
+    return time.strftime(pattern, time.localtime(time.time()))
+
+
 class HRankPathGather(PathGather):
+    vgg_pt = 'vgg_16_bn.pt'
+
     def __init__(self, model: str, dataset: str, ranks: str) -> None:
         super().__init__(model, dataset)
         self.rpath = ranks
         self.rank_index = 0
-
-    def curt_time_stamp(self):
-        pattern = '%Y.%m.%d_%H-%M-%S'
-        return time.strftime(pattern, time.localtime(time.time()))
 
     def model_dir(self):
         assert self.checkout(self.mpath), self.ERROR_MESS1
         return self.mpath
 
     def model_name(self):
-        return self.curt_time_stamp() + '.pt'
+        return curt_time_stamp() + '.pt'
 
-    def model(self):
-        return os.path.join(self.model_dir(), self.model_name())
+    def model(self, fixed=False):
+        if fixed:
+            return os.path.join(self.model_dir(), self.vgg_pt)
+        else:
+            return os.path.join(self.model_dir(), self.model_name())
 
     def dataset_dir(self):
         assert self.checkout(self.dpath), self.ERROR_MESS1
