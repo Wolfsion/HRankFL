@@ -11,7 +11,7 @@ sa = samplers.CF10NIIDSampler(num_slices, MAX_ROUND, data_per_client_epoch,
                               True, client_per_round)
 workers_loader = get_data_loader(CIFAR10_NAME, data_type="train",
                                  batch_size=CLIENT_BATCH_SIZE, shuffle=False,
-                                 sampler=sa, num_workers=8, pin_memory=True)
+                                 sampler=sa, num_workers=0, pin_memory=True)
 GLOBAL_LOGGER.info("Sampler initialized")
 
 
@@ -76,7 +76,7 @@ class CVHWorker(FLWorker):
 
     def fetch_dict(self):
         mess = self.recv_mess()
-        mess.run(False, alg=self.alg_obj, loader=self.loader)
+        mess.run(False, alg=self.alg_obj)
 
     def fetch_cp_rate(self):
         mess = self.recv_mess()
@@ -88,7 +88,7 @@ class CVHWorker(FLWorker):
 
     def push_rank(self):
         mess = FLMessage(MessType.UPLOAD_RANK)
-        mess.run(False, alg=self.alg_obj)
+        mess.run(False, alg=self.alg_obj, loader=self.loader)
         self.send_mess(mess)
 
 
@@ -111,7 +111,7 @@ class CVHRun:
             worker.push_rank()
         self.master.distribute_rank()
         for worker in self.workers:
-            worker.fetch_dict()
+            worker.fetch_rank()
 
     def download_cp_rate(self):
         self.master.distribute_cp_rate()

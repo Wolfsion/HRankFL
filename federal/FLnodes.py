@@ -39,9 +39,9 @@ class FLSimNet:
     def w_consume(self) -> FLMessage:
         assert self.curt_index != -1, self.ERROR_MESS1
         assert isinstance(self.buffer[self.curt_index], FLMessage), self.ERROR_MESS2
-        self.readen += 1
+        self.read += 1
         curt = deepcopy(self.buffer[self.curt_index])
-        if self.readen == self.workers:
+        if self.read == self.workers:
             self.curt_index -= 1
             self.buffer.pop()
             self.read = 0

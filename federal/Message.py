@@ -27,9 +27,9 @@ class FLMessage:
 
     def run(self, master=True, *args, **kwargs):
         if self.func is None:
-            name_base = "op" if self.mess.value > 0 else "op_"
-            fun_name = name_base + str(self.mess.value)
-            self.func = getattr(self, fun_name, self.op_default)
+            name_base = 'op' if self.mess.value > 0 else 'op_'
+            full_name = name_base + str(abs(self.mess.value))
+            self.func = getattr(self, full_name, self.op_default)
         self.func(master, *args, **kwargs)
 
     def op1(self, master=True, *args, **kwargs):
@@ -47,7 +47,6 @@ class FLMessage:
             assert 'state_dict' in self.content.keys(), self.ERROR_MESS3
             assert 'alg' in kwargs.keys(), self.ERROR_MESS2
             kwargs['alg'].model.load_state_dict(self.content['state_dict'])
-            kwargs['alg'].get_rank(kwargs['loader'])
 
     def op2(self, master=True, *args, **kwargs):
         if master:
@@ -56,6 +55,9 @@ class FLMessage:
             kwargs['ranks_container'].append(self.content['ranks'])
         else:
             assert 'alg' in kwargs.keys(), self.ERROR_MESS2
+            assert 'loader' in kwargs.keys(), self.ERROR_MESS2
+            # kwargs['alg'].get_rank(kwargs['loader'])
+            kwargs['alg'].deserialize_rank()
             self.content['ranks'] = deepcopy(kwargs['alg'].rank_dict)
 
     def op_2(self, master=True, *args, **kwargs):
@@ -72,7 +74,7 @@ class FLMessage:
         else:
             assert 'rank' in self.content.keys(), self.ERROR_MESS3
             assert 'alg' in kwargs.keys(), self.ERROR_MESS2
-            kwargs['alg'].load_params(self.content['rank'])
+            kwargs['alg'].rank_dict = self.content['rank']
 
     def op3(self, master=True, *args, **kwargs):
         pass
@@ -85,6 +87,7 @@ class FLMessage:
             assert 'cp_rate' in self.content.keys(), self.ERROR_MESS3
             assert 'alg' in kwargs.keys(), self.ERROR_MESS2
             kwargs['alg'].init_cp_model(self.content['cp_rate'])
+            kwargs['alg'].load_params()
 
     def op_default(self):
         pass

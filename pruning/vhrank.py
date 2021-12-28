@@ -91,10 +91,10 @@ class VGG16HRank(HRank):
     def load_params(self, rank_dict: OrderedDict = None):
         last_select_index = None  # Conv index selected in the previous layer
         if rank_dict is None:
-            iter_ranks = iter(self.rank_dict.values())
-        else:
             if not self.rank_dict:
                 self.deserialize_rank()
+            iter_ranks = iter(self.rank_dict.values())
+        else:
             iter_ranks = iter(rank_dict.values())
         osd = self.model.state_dict()
 
