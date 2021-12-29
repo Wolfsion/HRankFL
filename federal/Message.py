@@ -65,7 +65,7 @@ class FLMessage:
             assert 'ranks' in kwargs.keys(), self.ERROR_MESS2
             merge_rank = OrderedDict()
             for rank in kwargs['ranks']:
-                for k, v in rank:
+                for k, v in rank.items():
                     if k in merge_rank.keys():
                         merge_rank[k] += v
                     else:
