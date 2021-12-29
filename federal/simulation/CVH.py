@@ -21,9 +21,9 @@ class CVHMaster(FLMaster):
                  bridge: FLSimNet = default_bridge, save_interval=50):
         self.wrapper = VWrapper(model)
         self.wrapper.model.eval()
-        super().__init__(args, bridge, save_interval)
         self.ranks = []
         self.pruning_rate = None
+        super().__init__(args, bridge, save_interval)
 
     # ! pruning_rate hyper obtain
     def init_algorithm(self):
