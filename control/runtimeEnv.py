@@ -7,7 +7,7 @@ from control.pathHandler import HRankPathGather
 # Static Env
 ###
 
-gpu = [0, 1]
+gpu = [0]
 limit = 5 
 arch = "vgg16"
 

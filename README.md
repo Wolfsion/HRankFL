@@ -85,5 +85,20 @@ flowchart TB
 
 ## 本机调试支持
 
-+ preEnv：gpu=0
++ preEnv 10：
+
+gpu=0
+
+
+
 + vwrapper 157：
+
+checkpoint = torch.load(path, map_location='cuda:0')
+
+
+
++ message 59-60：
+
+\# kwargs['alg'].get_rank(kwargs['loader'])
+
+kwargs['alg'].deserialize_rank()

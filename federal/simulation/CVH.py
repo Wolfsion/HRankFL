@@ -64,7 +64,6 @@ class CVHMaster(FLMaster):
 
 
 class CVHWorker(FLWorker):
-
     def __init__(self, model: nn.Module):
         self.model = model
         self.alg_obj: VGG16HRank = None
