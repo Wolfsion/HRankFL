@@ -78,3 +78,12 @@ flowchart TB
 
 + torch, torchaudio, torchvision
 + DecDeprecated, fedlab
+
+
+
+
+
+## 本机调试支持
+
++ preEnv：gpu=0
++ vwrapper 157：

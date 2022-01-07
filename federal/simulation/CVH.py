@@ -1,3 +1,5 @@
+import random
+
 import data.samplers as samplers
 from data.dataProvider import get_data_loader
 import model.modelUtil as modelUtil
@@ -45,10 +47,12 @@ class CVHMaster(FLMaster):
         mess.run(model=deepcopy(self.wrapper.model))
         self.send_mess(mess)
 
-    def distribute_rank(self):
+    def distribute_rank(self, index_limit=workers-1):
         list_mess = self.recv_mess()
-        for mess in list_mess:
+        for index, mess in enumerate(list_mess):
             mess.run(ranks_container=self.ranks)
+            if index == index_limit:
+                break
         mess = FLMessage(MessType.DOWNLOAD_RANK)
         mess.run(ranks=deepcopy(self.ranks))
         self.send_mess(mess)
@@ -63,7 +67,7 @@ class CVHWorker(FLWorker):
 
     def __init__(self, model: nn.Module):
         self.model = model
-        self.alg_obj = None
+        self.alg_obj: VGG16HRank = None
         super().__init__()
         self.alg_obj.model.train()
         self.rank = None
@@ -95,6 +99,9 @@ class CVHWorker(FLWorker):
 # deepcopy generate model
 class CVHRun:
     def __init__(self, args: argparse.Namespace) -> None:
+        self.random_indices = list(range(workers))
+        random.shuffle(self.random_indices)
+        self.args = args
         self.pipe = FLSimNet()
         self.model = modelUtil.vgg_16_bn(ORIGIN_CP_RATE)
         self.models = [modelUtil.vgg_16_bn(ORIGIN_CP_RATE) for _ in range(workers)]
@@ -106,14 +113,20 @@ class CVHRun:
         for worker in self.workers:
             worker.fetch_dict()
 
-    def upload_download_ranks(self):
-        for worker in self.workers:
-            worker.push_rank()
-        self.master.distribute_rank()
-        for worker in self.workers:
-            worker.fetch_rank()
-
     def download_cp_rate(self):
         self.master.distribute_cp_rate()
         for worker in self.workers:
             worker.fetch_cp_rate()
+
+    def upload_download_ranks(self):
+        for worker in self.workers:
+            worker.push_rank()
+        if self.args.cs:
+            self.master.distribute_rank(self.args.cs)
+        else:
+            self.master.distribute_rank()
+        for worker in self.workers:
+            worker.fetch_rank()
+
+    def valid_acc(self):
+        self.workers[0].alg_obj.wrapper.device.load_model('./test.pt')

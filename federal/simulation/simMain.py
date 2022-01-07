@@ -19,11 +19,12 @@ def main():
     #       "Num users = {}. Seed = {}. Max round = {}. "
     #       "Target density = {}".format(CIFAR10_NAME, args.use_adaptive, args.initial_pruning, args.client_selection,
     #                                    workers, args.seed, MAX_ROUND, args.target_density))
-    dic = {"a": 1, "b": 2}
+    dic = {"cs": 10}
     args = argparse.Namespace(**dic)
     fl_runner = CVHRun(args)
     fl_runner.download_dict()
     fl_runner.download_cp_rate()
     fl_runner.upload_download_ranks()
+    fl_runner.valid_acc()
 
     
