@@ -158,7 +158,7 @@ class VADevice:
             if load_model_gpus:
                 for k, v in state_dict.items():
                     adapt_dict[k.replace(self.PREFIX, '', 1)] = v
-        self.model.load_state_dict(adapt_dict)
+        self.model.load_state_dict(adapt_dict, False)
 
     def direct_load_model(self):
         pass

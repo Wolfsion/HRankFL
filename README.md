@@ -102,3 +102,9 @@ checkpoint = torch.load(path, map_location='cuda:0')
 \# kwargs['alg'].get_rank(kwargs['loader'])
 
 kwargs['alg'].deserialize_rank()
+
+
+
++ vdevice 161：
+
+self.model.load_state_dict(adapt_dict, False)
