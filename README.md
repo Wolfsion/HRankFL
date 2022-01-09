@@ -40,16 +40,32 @@ flowchart TB
 ### 待实现
 
 + argParser & runtimeEnv：参数解析器与执行环境的绑定
+
 + pathHandler：路径绑定与加载器
+
 + vdevice：模型的序列化与反序列化
+
 + vwrapper：模型训练时配置加载与保存，模型训练时开销测算
+
 + dynamicChange：网络模型结构固化或是动态变化
+
 + hyperProvider：剪枝参数自适应给出
+
 + model：原型模型参数类变量创建
+
 + autoParser：Json配置与解析
+
 + 注释补充与函数接口完善
+
 + args&runtimeEnv：command和json配置协调
+
+  
+
 + fltrain：实现联邦学习过程
+
++ netComm：实现真实网络交互通信
+
++ ext：实现ResNet、MobileNet在ImageNet上的效果
 
 
 
@@ -85,5 +101,26 @@ flowchart TB
 
 ## 本机调试支持
 
-+ preEnv：gpu=0
++ preEnv 10：
+
+gpu=0
+
+
+
 + vwrapper 157：
+
+checkpoint = torch.load(path, map_location='cuda:0')
+
+
+
++ message 59-60：
+
+\# kwargs['alg'].get_rank(kwargs['loader'])
+
+kwargs['alg'].deserialize_rank()
+
+
+
++ vdevice 161：
+
+self.model.load_state_dict(adapt_dict, False)
