@@ -56,8 +56,8 @@ class FLMessage:
         else:
             assert 'alg' in kwargs.keys(), self.ERROR_MESS2
             assert 'loader' in kwargs.keys(), self.ERROR_MESS2
-            # kwargs['alg'].get_rank(kwargs['loader'])
-            kwargs['alg'].deserialize_rank()
+            kwargs['alg'].get_rank(kwargs['loader'])
+            # kwargs['alg'].deserialize_rank()
             self.content['ranks'] = deepcopy(kwargs['alg'].rank_dict)
 
     def op_2(self, master=True, *args, **kwargs):

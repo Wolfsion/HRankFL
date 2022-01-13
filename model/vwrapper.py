@@ -154,6 +154,6 @@ class VWrapper:
 
     # !
     def load_checkpoint(self, path: str, model_key: str = 'state_dict'):
-        checkpoint = torch.load(path, map_location='cuda:0')
+        checkpoint = torch.load(path)
         assert model_key in checkpoint.keys(), self.ERROR_MESS1
         self.device.load_model(checkpoint[model_key])
