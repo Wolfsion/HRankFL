@@ -1,4 +1,6 @@
 import pickle
+from copy import deepcopy
+
 import torch
 from torch.nn.functional import one_hot
 from fedlab.utils.dataset import CIFAR10Partitioner
@@ -14,6 +16,7 @@ MEAN = [0.4914, 0.4822, 0.4465]
 STD = [0.2023, 0.1994, 0.2010]
 CLASSES = 10
 ORIGIN_CP_RATE = [0.] * 100
+VGG16 = 'results/vgg/vgg_16_bn.pt'
 
 num_clients = 100
 batch_size = 32
@@ -77,22 +80,25 @@ def init_samplers():
                                          dir_alpha=0.3,
                                          seed=2022)
     global samplers_dict
-    for i in num_clients:
+    for i in range(num_clients):
         samplers_dict[i] = TSampler(hetero_dir_part[i])
 
 
 def init_data_loaders():
     global loaders_dict
-    for i in num_clients:
+    for i in range(num_clients):
         loaders_dict[i] = DataLoader(dataset, batch_size=batch_size, shuffle=True,
                                      sampler=samplers_dict[i], num_workers=8,
                                      pin_memory=True)
 
 
 def get_ranks():
-    for i in num_clients:
-        hranks_dict[i] = VGG16HRank(modelUtil.vgg_16_bn(ORIGIN_CP_RATE))
-    for i in num_clients:
+    hranks_dict[0] = VGG16HRank(modelUtil.vgg_16_bn(ORIGIN_CP_RATE))
+    hranks_dict[0].wrapper.load_checkpoint(VGG16)
+    model = hranks_dict[0].model
+    for i in range(1, num_clients):
+        hranks_dict[i] = VGG16HRank(deepcopy(model))
+    for i in range(num_clients):
         hranks_dict[i].get_rank(loaders_dict[i])
         ranks_dict[i] = hranks_dict[i].rank_dict
 
