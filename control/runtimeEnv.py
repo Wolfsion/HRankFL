@@ -7,7 +7,7 @@ from control.pathHandler import HRankPathGather
 # Static Env
 ###
 
-gpu = [0, 1]
+gpu = [0]
 limit = 5 
 arch = "vgg16"
 
@@ -20,7 +20,7 @@ vgg_model = 'results/vgg'
 num_slices = 100
 data_per_client_epoch = 100
 client_per_round = 10
-workers = 100
+workers = 10
 
 # pruning rate
 compress_rate=[0.]*100
