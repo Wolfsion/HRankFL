@@ -18,7 +18,7 @@ CLASSES = 10
 ORIGIN_CP_RATE = [0.] * 100
 VGG16 = 'results/vgg/vgg_16_bn.pt'
 
-num_clients = 100
+num_clients = 1
 batch_size = 32
 
 dataset = None
@@ -87,24 +87,25 @@ def init_samplers():
 def init_data_loaders():
     global loaders_dict
     for i in range(num_clients):
-        loaders_dict[i] = DataLoader(dataset, batch_size=batch_size, shuffle=True,
+        loaders_dict[i] = DataLoader(dataset, batch_size=batch_size, shuffle=False,
                                      sampler=samplers_dict[i], num_workers=8,
                                      pin_memory=True)
 
 
 def get_ranks():
-    hranks_dict[0] = VGG16HRank(modelUtil.vgg_16_bn(ORIGIN_CP_RATE))
-    hranks_dict[0].wrapper.load_checkpoint(VGG16)
-    model = hranks_dict[0].model
-    for i in range(1, num_clients):
-        hranks_dict[i] = VGG16HRank(deepcopy(model))
+    global hranks_dict
+    for i in range(num_clients):
+        hranks_dict[i] = VGG16HRank(modelUtil.vgg_16_bn(ORIGIN_CP_RATE))
+        hranks_dict[i].wrapper.load_checkpoint(VGG16)
+    global ranks_dict
     for i in range(num_clients):
         hranks_dict[i].get_rank(loaders_dict[i])
         ranks_dict[i] = hranks_dict[i].rank_dict
 
 
 def store_ranks():
-    with open('ranks', 'wb') as f:
+    global ranks_dict
+    with open('ranks.ret', 'wb') as f:
         pickle.dump(ranks_dict, f)
 
 

@@ -152,6 +152,12 @@ class VGG16HRank(HRank):
         with torch.no_grad():
             for batch_idx, (inputs, targets) in enumerate(loader):
                 # use the first 5 batches to estimate the rank.
+
+                ## debug
+                print(inputs.size())
+                print(targets.size())
+                ## debug
+
                 if batch_idx >= limit:
                     break
 
