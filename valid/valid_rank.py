@@ -18,7 +18,7 @@ CLASSES = 10
 ORIGIN_CP_RATE = [0.] * 100
 VGG16 = 'results/vgg/vgg_16_bn.pt'
 
-num_clients = 1
+num_clients = 2
 batch_size = 32
 
 dataset = None

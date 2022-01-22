@@ -57,6 +57,10 @@ class HRank(ABC):
 
 
 class VGG16HRank(HRank):
+    ## debug
+    first = True
+    ## debug
+
     def __init__(self, model: nn.Module, model_type: int = 1) -> None:
         super().__init__(model_type, model)
         self.wrapper = VWrapper(model)
@@ -154,11 +158,18 @@ class VGG16HRank(HRank):
                 # use the first 5 batches to estimate the rank.
 
                 ## debug
-                print(inputs.size())
-                print(targets.size())
+                # torch.Size([32, 3, 32, 32])
+                # torch.Size([32, 10])
+                if self.first:
+                    GLOBAL_LOGGER.info('using random data...')
+                    inputs = torch.randn(32, 3, 32, 32)
+                    targets = torch.randn(32, 10)
                 ## debug
 
                 if batch_idx >= limit:
+                    ## debug
+                    self.first = False
+                    ## debug
                     break
 
                 loss, cort = self.wrapper.step_eva(inputs, targets)
