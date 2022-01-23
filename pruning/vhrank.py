@@ -70,6 +70,12 @@ class VGG16HRank(HRank):
         self.cp_model = None
         self.cp_model_sd = None
 
+    ## debug
+    @classmethod
+    def chf(cls):
+        cls.first = False
+    ## debug
+
     def get_rank(self, loader):
         for cov_id in self.relu_cfg:
             cov_layer = self.wrapper.device.access_model().features[cov_id]
@@ -83,6 +89,7 @@ class VGG16HRank(HRank):
             self.feature_result = torch.tensor(0.)
             self.total = torch.tensor(0.)
 
+        self.chf()
         file_repo.reset_rank_index()
 
     def deserialize_rank(self):
@@ -167,9 +174,6 @@ class VGG16HRank(HRank):
                 ## debug
 
                 if batch_idx >= limit:
-                    ## debug
-                    self.first = False
-                    ## debug
                     break
 
                 loss, cort = self.wrapper.step_eva(inputs, targets)
