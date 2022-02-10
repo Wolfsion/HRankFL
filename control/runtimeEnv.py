@@ -8,6 +8,7 @@ from control.pathHandler import HRankPathGather
 ###
 
 gpu = [0, 1]
+train_limit = 10
 limit = 5 
 arch = "vgg16"
 

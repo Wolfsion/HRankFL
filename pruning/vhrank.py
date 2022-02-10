@@ -57,9 +57,10 @@ class HRank(ABC):
 
 
 class VGG16HRank(HRank):
-    ## debug
-    first = True
-    ## debug
+    # ## debug
+    # first = True
+    #
+    # ## debug
 
     def __init__(self, model: nn.Module, model_type: int = 1) -> None:
         super().__init__(model_type, model)
@@ -70,11 +71,18 @@ class VGG16HRank(HRank):
         self.cp_model = None
         self.cp_model_sd = None
 
-    ## debug
-    @classmethod
-    def chf(cls):
-        cls.first = False
-    ## debug
+        self.curt_dict = None
+        self.curt_batch = None
+
+    # ## debug
+    # @classmethod
+    # def chf(cls):
+    #     cls.first = False
+    #
+    # ## debug
+
+    def device_train(self, loader):
+        self.learn_run(loader)
 
     def get_rank(self, loader):
         for cov_id in self.relu_cfg:
@@ -89,8 +97,13 @@ class VGG16HRank(HRank):
             self.feature_result = torch.tensor(0.)
             self.total = torch.tensor(0.)
 
-        self.chf()
+        # ## debug
+        # self.chf()
+        # ## debug
         file_repo.reset_rank_index()
+
+    def get_rank_plus(self):
+        pass
 
     def deserialize_rank(self):
         for cov_id in enumerate(self.relu_cfg):
@@ -154,8 +167,24 @@ class VGG16HRank(HRank):
 
         self.cp_model.load_state_dict(self.cp_model_sd)
 
+    def learn_run(self, loader: tdata.DataLoader):
+        test_loss = 0
+        correct = 0
+        total = 0
+        for batch_idx, (inputs, targets) in enumerate(loader):
+            if batch_idx >= limit:
+                break
+            loss, cort = self.wrapper.step(inputs, targets)
+            test_loss += loss
+            correct += cort
+            total += targets.size(0)
+            GLOBAL_LOGGER.info('Train:batch_idx:%d | Loss: %.3f | Acc: %.3f%% (%d/%d)'
+                               % (batch_idx, test_loss / (batch_idx + 1), 100. * correct / total, correct, total))
+
+        self.curt_dict = self.wrapper.model.state_dict()
+        self.curt_batch = total
+
     def feed_run(self, loader: tdata.DataLoader):
-        self.model.eval()
         test_loss = 0
         correct = 0
         total = 0
@@ -164,14 +193,14 @@ class VGG16HRank(HRank):
             for batch_idx, (inputs, targets) in enumerate(loader):
                 # use the first 5 batches to estimate the rank.
 
-                ## debug
-                # torch.Size([32, 3, 32, 32])
-                # torch.Size([32, 10])
-                if self.first:
-                    GLOBAL_LOGGER.info('using random data...')
-                    inputs = torch.randn(32, 3, 32, 32)
-                    targets = torch.randn(32, 10)
-                ## debug
+                # ## debug
+                # # torch.Size([32, 3, 32, 32])
+                # # torch.Size([32, 10])
+                # if self.first:
+                #     GLOBAL_LOGGER.info('using random data...')
+                #     inputs = torch.randn(32, 3, 32, 32)
+                #     targets = torch.randn(32, 10)
+                # ## debug
 
                 if batch_idx >= limit:
                     break
@@ -188,6 +217,14 @@ class VGG16HRank(HRank):
     def init_cp_model(self, pruning_rate: List[float]):
         self.cp_model = modelUtil.vgg_16_bn(pruning_rate)
         self.cp_model_sd = self.cp_model.state_dict()
+
+    def valid_performance(self, loader: tdata.DataLoader):
+        wrapper = VWrapper(self.cp_model)
+        with torch.no_grad():
+            (inputs, targets) = next(loader)
+            loss, cort = wrapper.step_eva(inputs, targets)
+            GLOBAL_LOGGER.info('Valid performance | Loss: %.3f | Acc: %.3f%% (%d/%d)'
+                               % (loss, 100. * cort / targets.size(0), cort, targets.size(0)))
 
 
 class IterVGG16HRank(HRank):

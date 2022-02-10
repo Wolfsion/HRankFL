@@ -116,7 +116,6 @@ class VWrapper:
         inputs, labels = self.device.on_tensor(inputs, labels)
         pred = self.model(inputs)
         loss = self.loss_func(pred, labels)
-        test_loss = 0
         test_loss += loss.item()
         _, predicted = pred.max(1)
         _, targets = labels.max(1)
@@ -139,7 +138,7 @@ class VWrapper:
     def access_model(self) -> nn.Module:
         return self.device.access_model()
 
-    def performance_overhead(self):
+    def performance_overhead(self, loader: tdata.DataLoader):
         pass
 
     def save_checkpoint(self):

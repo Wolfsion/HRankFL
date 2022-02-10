@@ -34,15 +34,35 @@ class FLMessage:
 
     def op1(self, master=True, *args, **kwargs):
         if master:
-            pass
+            assert 'dicts' in self.content.keys(), self.ERROR_MESS3
+            assert 'batches' in self.content.keys(), self.ERROR_MESS3
+            assert 'dicts_container' in kwargs.keys(), self.ERROR_MESS2
+            assert 'batches_container' in kwargs.keys(), self.ERROR_MESS2
+            kwargs['dicts_container'].append(self.content['dicts'])
+            kwargs['batches_container'].append(self.content['batches'])
         else:
-            pass
+            assert 'alg' in kwargs.keys(), self.ERROR_MESS2
+            assert 'loader' in kwargs.keys(), self.ERROR_MESS2
+            kwargs['alg'].device_train(kwargs['loader'])
+            self.content['dicts'] = deepcopy(kwargs['alg'].curt_dict)
+            self.content['batches'] = deepcopy(kwargs['alg'].curt_batch)
 
     def op_1(self, master=True, *args, **kwargs):
         if master:
+            assert 'dicts' in kwargs.keys(), self.ERROR_MESS2
+            assert 'batches' in kwargs.keys(), self.ERROR_MESS2
             assert 'model' in kwargs.keys(), self.ERROR_MESS2
-            model: nn.Module = kwargs['model']
-            self.content['state_dict'] = model.state_dict()
+
+            merge_dict = OrderedDict()
+            for dic in kwargs['dicts']:
+                for k, v in dic.items():
+                    if k in merge_dict.keys():
+                        merge_dict[k] += v
+                    else:
+                        merge_dict[k] = v
+
+            self.content['state_dict'] = deepcopy(merge_dict)
+            kwargs['model'].load_state_dict(merge_dict)
         else:
             assert 'state_dict' in self.content.keys(), self.ERROR_MESS3
             assert 'alg' in kwargs.keys(), self.ERROR_MESS2

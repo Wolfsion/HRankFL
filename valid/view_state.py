@@ -8,9 +8,9 @@ ranks_dict = OrderedDict()
 num_clients = 100
 
 
-def load():
+def load(path: str):
     global ranks_dict
-    with open('ranks.ret', 'rb') as f:
+    with open(path, 'rb') as f:
         ranks_dict = pickle.load(f)
 
 
@@ -24,6 +24,6 @@ def view():
         print(cosine_similarity(np.array(layer_rank[i])))
 
 
-def main():
-    load()
+def main(path):
+    load(path)
     view()
