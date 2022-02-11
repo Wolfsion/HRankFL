@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import torch.utils.data as tdata
 from torch.optim import lr_scheduler
 from torch.optim.optimizer import Optimizer
 from torch.nn.functional import binary_cross_entropy_with_logits
@@ -109,8 +110,13 @@ class VWrapper:
         loss.backward()
         return self.optimizer.step()
 
-    def step_eva(self, inputs, labels):
-        self.model.eval()
+    def step_eva(self, inputs, labels, train=False):
+        if train:
+            self.zero_grad()
+            self.model.train()
+        else:
+            self.model.eval()
+
         test_loss = 0
         correct = 0
         inputs, labels = self.device.on_tensor(inputs, labels)
