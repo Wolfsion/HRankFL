@@ -41,10 +41,13 @@ class MasterPlus(FLMaster):
             mess.run(dicts_container=self.dicts, batches_container=self.batches)
             if index == index_limit:
                 break
+        batch_sum = sum(self.batches)
+        for index, batch in enumerate(self.batches):
+            self.batches[index] = batch / batch_sum
         mess = FLMessage(MessType.DOWNLOAD_STATIC_DICT)
         mess.run(dicts=deepcopy(self.dicts),
                  batches=deepcopy(self.batches),
-                 model=self.wrapper.device.access_model())
+                 wrapper=self.wrapper)
         self.send_mess(mess)
 
     def distribute_cp_rate(self):
@@ -89,6 +92,7 @@ class RunPlus:
         self.pipe = FLSimNet()
         self.model = modelUtil.vgg_16_bn(ORIGIN_CP_RATE)
         self.models = [modelUtil.vgg_16_bn(ORIGIN_CP_RATE) for _ in range(workers)]
+
         self.master = MasterPlus(args, self.model)
         self.workers = [WorkerPlus(self.models[i]) for i in range(workers)]
 

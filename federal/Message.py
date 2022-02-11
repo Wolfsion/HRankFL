@@ -51,18 +51,20 @@ class FLMessage:
         if master:
             assert 'dicts' in kwargs.keys(), self.ERROR_MESS2
             assert 'batches' in kwargs.keys(), self.ERROR_MESS2
-            assert 'model' in kwargs.keys(), self.ERROR_MESS2
+            assert 'wrapper' in kwargs.keys(), self.ERROR_MESS2
 
             merge_dict = OrderedDict()
+            curt_device = 0
             for dic in kwargs['dicts']:
                 for k, v in dic.items():
                     if k in merge_dict.keys():
-                        merge_dict[k] += v
+                        merge_dict[k] += v * kwargs['batches'][curt_device]
                     else:
-                        merge_dict[k] = v
+                        merge_dict[k] = v * kwargs['batches'][curt_device]
+                curt_device += 1
 
             self.content['state_dict'] = deepcopy(merge_dict)
-            kwargs['model'].load_state_dict(merge_dict)
+            kwargs['wrapper'].device.load_model(merge_dict)
         else:
             assert 'state_dict' in self.content.keys(), self.ERROR_MESS3
             assert 'alg' in kwargs.keys(), self.ERROR_MESS2

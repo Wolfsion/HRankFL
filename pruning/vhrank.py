@@ -172,7 +172,7 @@ class VGG16HRank(HRank):
         correct = 0
         total = 0
         for batch_idx, (inputs, targets) in enumerate(loader):
-            if batch_idx >= limit:
+            if batch_idx >= train_limit:
                 break
             loss, cort = self.wrapper.step_eva(inputs, targets, train=True)
             test_loss += loss
