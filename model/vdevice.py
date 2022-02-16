@@ -135,7 +135,7 @@ class VADevice:
 
     def save_model(self, path: str):
         assert self.model is not None, self.ERROR_MESS2
-        if self.dev_list > 1:
+        if len(self.dev_list) > 1:
             torch.save(self.model.module.state_dict(), path)
         else:
             torch.save(self.model.state_dict(), path)
@@ -154,10 +154,14 @@ class VADevice:
             if not load_model_gpus:
                 for k, v in state_dict.items():
                     adapt_dict[self.PREFIX + k] = v
+            else:
+                adapt_dict = state_dict
         else:
             if load_model_gpus:
                 for k, v in state_dict.items():
                     adapt_dict[k.replace(self.PREFIX, '', 1)] = v
+            else:
+                adapt_dict = state_dict
         self.model.load_state_dict(adapt_dict)
 
     def direct_load_model(self):

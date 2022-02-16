@@ -3,10 +3,14 @@ import pickle
 import warnings
 import torch
 import torch.nn as nn
-from torch.nn.modules.instancenorm import LazyInstanceNorm1d
+import torch.utils.data as tdata
+from thop import profile
+from timeit import default_timer as timer
 
 from model import vgg
 from control.preEnv import *
+from control.runtimeEnv import *
+from model.vwrapper import VWrapper
 
 hasParameter = lambda x: len(list(x.parameters())) != 0
 
@@ -68,3 +72,37 @@ def pickle_load(f):
         obj = pickle.load(opened_f)
         opened_f.close()
     return obj
+
+def valid_performance(self, loader: tdata.DataLoader, model:nn.Module):
+    wrapper = VWrapper(model)
+    first_feed = True
+    flops, params, test_loss, correct, total = 0
+
+    time_start = timer()
+    with torch.no_grad():
+        for batch_idx, (inputs, targets) in enumerate(loader):
+            if first_feed:
+                flops, params = profile(model, inputs=(inputs,))
+                first_feed = False
+
+            if batch_idx >= valid_limit:
+                break
+
+            loss, cort = wrapper.step_eva(inputs, targets)
+            test_loss += loss
+            correct += cort
+
+            total += targets.size(0)
+
+    time_cost = timer() - time_start
+    total_params = sum(p.numel() for p in model.parameters())
+    total_trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+
+    GLOBAL_LOGGER.info('Loss: %.3f | Acc: %.3f%% (%d/%d)'
+                       % (test_loss / valid_limit, 100. * correct / total, correct, total))
+
+    GLOBAL_LOGGER.info('Time cost: %.3f | FLOPs: %d | Params: %d'
+                       % (time_cost, flops, params))
+
+    GLOBAL_LOGGER.info('Total params: %d | Trainable params: %d'
+                       % (total_params, total_trainable_params))

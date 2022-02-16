@@ -225,12 +225,3 @@ class VGG16HRank(HRank):
             loss, cort = wrapper.step_eva(inputs, targets)
             GLOBAL_LOGGER.info('Valid performance | Loss: %.3f | Acc: %.3f%% (%d/%d)'
                                % (loss, 100. * cort / targets.size(0), cort, targets.size(0)))
-
-
-class IterVGG16HRank(HRank):
-    pass
-    # def get_mask(self):
-    #     pass
-
-    # def fix_structure(self):
-    #     pass

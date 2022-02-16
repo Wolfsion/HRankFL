@@ -6,3 +6,4 @@ testLearn.py
 !.gitignore
 test.sh
 ranks.ret
+test.pt
