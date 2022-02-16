@@ -15,23 +15,24 @@ GLOBAL_LOGGER.info("Sampler initialized----------")
 
 
 def origin_model():
-    GLOBAL_LOGGER.info('Origin model-------------')
     ori_model = vgg_16_bn(compress_rate)
     alg_obj = IterRank(ori_model)
     alg_obj.device_train(global_loader, 100)
-    valid_performance(alg_obj.model)
+
+    GLOBAL_LOGGER.info('Origin model-------------')
+    valid_performance(alg_obj.model, global_loader)
 
 
 def random_pruning_model():
-    GLOBAL_LOGGER.info('Random pruning model-------------')
     shrink_model = vgg_16_bn(candidate_rate)
     alg_obj = IterRank(shrink_model)
     alg_obj.device_train(global_loader, 100)
-    valid_performance(alg_obj.model)
+
+    GLOBAL_LOGGER.info('Random pruning model-------------')
+    valid_performance(alg_obj.model, global_loader)
 
 
 def hrank_pruning_model():
-    GLOBAL_LOGGER.info('HRank pruning model-------------')
     ori_model = vgg_16_bn(compress_rate)
     alg_obj = IterRank(ori_model)
     alg_obj.init_cp_model()
@@ -40,7 +41,9 @@ def hrank_pruning_model():
 
     alg_obj2 = IterRank(alg_obj.cp_model)
     alg_obj2.device_train(global_loader, 100)
-    valid_performance(alg_obj2.model)
+
+    GLOBAL_LOGGER.info('HRank pruning model-------------')
+    valid_performance(alg_obj2.model, global_loader)
 
 def main():
     origin_model()
