@@ -73,16 +73,20 @@ def pickle_load(f):
         opened_f.close()
     return obj
 
-def valid_performance(self, loader: tdata.DataLoader, model:nn.Module):
-    wrapper = VWrapper(model)
+def valid_performance(loader: tdata.DataLoader, wrapper: VWrapper):
     first_feed = True
-    flops, params, test_loss, correct, total = 0
+    flops = 0
+    params = 0
+    test_loss = 0
+    correct = 0
+    total = 0
 
     time_start = timer()
     with torch.no_grad():
         for batch_idx, (inputs, targets) in enumerate(loader):
+            inputs, targets = wrapper.device.on_tensor(inputs, targets)
             if first_feed:
-                flops, params = profile(model, inputs=(inputs,))
+                flops, params = profile(wrapper.model, inputs=(inputs,))
                 first_feed = False
 
             if batch_idx >= valid_limit:
@@ -95,8 +99,8 @@ def valid_performance(self, loader: tdata.DataLoader, model:nn.Module):
             total += targets.size(0)
 
     time_cost = timer() - time_start
-    total_params = sum(p.numel() for p in model.parameters())
-    total_trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    total_params = sum(p.numel() for p in wrapper.model.parameters())
+    total_trainable_params = sum(p.numel() for p in wrapper.model.parameters() if p.requires_grad)
 
     GLOBAL_LOGGER.info('Loss: %.3f | Acc: %.3f%% (%d/%d)'
                        % (test_loss / valid_limit, 100. * correct / total, correct, total))

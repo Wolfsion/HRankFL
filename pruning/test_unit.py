@@ -20,7 +20,7 @@ def origin_model():
     alg_obj.device_train(global_loader, 100)
 
     GLOBAL_LOGGER.info('Origin model-------------')
-    valid_performance(alg_obj.model, global_loader)
+    valid_performance(global_loader, alg_obj)
 
 
 def random_pruning_model():
@@ -29,7 +29,7 @@ def random_pruning_model():
     alg_obj.device_train(global_loader, 100)
 
     GLOBAL_LOGGER.info('Random pruning model-------------')
-    valid_performance(alg_obj.model, global_loader)
+    valid_performance(global_loader, alg_obj)
 
 
 def hrank_pruning_model():
@@ -43,7 +43,7 @@ def hrank_pruning_model():
     alg_obj2.device_train(global_loader, 100)
 
     GLOBAL_LOGGER.info('HRank pruning model-------------')
-    valid_performance(alg_obj2.model, global_loader)
+    valid_performance(global_loader, alg_obj2)
 
 def main():
     origin_model()
