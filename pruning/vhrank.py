@@ -9,8 +9,8 @@ import torch.nn as nn
 import torch.utils.data as tdata
 import collections
 
-from control.preEnv import *
-from control.runtimeEnv import *
+from env.preEnv import *
+from env.runtimeEnv import *
 from model.vwrapper import VWrapper
 from model import modelUtil
 

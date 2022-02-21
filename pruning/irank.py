@@ -6,8 +6,8 @@ from thop import profile
 from collections import OrderedDict
 from typing import List
 
-from control.preEnv import *
-from control.runtimeEnv import *
+from env.preEnv import *
+from env.runtimeEnv import *
 
 from pruning.vhrank import HRank
 from model.vwrapper import VWrapper
@@ -96,7 +96,7 @@ class IterRank(HRank):
             iter_ranks = iter(self.rank_dict.values())
         else:
             iter_ranks = iter(rank_dict.values())
-        osd = self.model.state_dict()
+        osd = self.model.module.state_dict()
 
         for name, module in self.model.named_modules():
             if self.wrapper.device.GPUs:

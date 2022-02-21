@@ -1,5 +1,5 @@
 from enum import Enum, unique
-from control.vlogger import VLogger
+from env.vlogger import VLogger
 
 
 # dataset type

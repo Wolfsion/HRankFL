@@ -6,8 +6,8 @@ from torch.optim import lr_scheduler
 from torch.optim.optimizer import Optimizer
 from torch.nn.functional import binary_cross_entropy_with_logits
 
-from control.preEnv import *
-from control.runtimeEnv import *
+from env.preEnv import *
+from env.runtimeEnv import *
 from model import vdevice
 
 

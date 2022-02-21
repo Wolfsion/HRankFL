@@ -2,11 +2,11 @@ import argparse
 from abc import ABC, abstractmethod
 from typing import List
 
-from control.pathHandler import *
+from env.pathHandler import *
 from federal.Message import *
 from data.dataProvider import DataLoader
 
-from control.runtimeEnv import *
+from env.runtimeEnv import *
 
 
 class FLSimNet:

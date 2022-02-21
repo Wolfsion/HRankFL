@@ -4,8 +4,8 @@ import torch
 from torch.optim import lr_scheduler
 from collections import OrderedDict
 
-from control.argParser import PruningFLParser
-from control.preEnv import *
+from env.argParser import PruningFLParser
+from env.preEnv import *
 from federal.FLnodes import *
 from data.samplers import CF10NIIDSampler
 from data.dataProvider import get_data_loader

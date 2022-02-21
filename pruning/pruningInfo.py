@@ -5,7 +5,7 @@ from deprecated import deprecated
 import torch.nn as nn
 import numpy as np
 
-from control.preEnv import GLOBAL_LOGGER
+from env.preEnv import GLOBAL_LOGGER
 
 
 class ModelMask(ABC):

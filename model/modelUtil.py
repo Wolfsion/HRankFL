@@ -6,10 +6,11 @@ import torch.nn as nn
 import torch.utils.data as tdata
 from thop import profile
 from timeit import default_timer as timer
+from copy import deepcopy
 
 from model import vgg
-from control.preEnv import *
-from control.runtimeEnv import *
+from env.preEnv import *
+from env.runtimeEnv import *
 from model.vwrapper import VWrapper
 
 hasParameter = lambda x: len(list(x.parameters())) != 0
@@ -84,9 +85,9 @@ def valid_performance(loader: tdata.DataLoader, wrapper: VWrapper):
     time_start = timer()
     with torch.no_grad():
         for batch_idx, (inputs, targets) in enumerate(loader):
-            inputs, targets = wrapper.device.on_tensor(inputs, targets)
             if first_feed:
-                flops, params = profile(wrapper.model, inputs=(inputs,))
+                tmp = deepcopy(wrapper.model.module)
+                flops, params = profile(tmp.cpu(), inputs=(inputs,))
                 first_feed = False
 
             if batch_idx >= valid_limit:

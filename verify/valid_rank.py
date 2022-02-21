@@ -1,5 +1,6 @@
 import pickle
 from copy import deepcopy
+from os.path import join
 
 import torch
 from torch.nn.functional import one_hot
@@ -11,12 +12,13 @@ from collections import OrderedDict
 
 from model import modelUtil
 from pruning.vhrank import VGG16HRank
+from env.runtimeEnv import *
 
 MEAN = [0.4914, 0.4822, 0.4465]
 STD = [0.2023, 0.1994, 0.2010]
 CLASSES = 10
 ORIGIN_CP_RATE = [0.] * 100
-VGG16 = 'results/vgg/vgg_16_bn.pt'
+VGG16 = join(vgg_model, "vgg_16_bn.pt")
 
 num_clients = 2
 batch_size = 32
@@ -68,7 +70,7 @@ def init_datasets():
     target_transform = transforms.Compose([DataToTensor(dtype=torch.long),
                                            OneHot(CLASSES, to_float=True)])
     global dataset
-    dataset = CIFAR10(root='localSet/CIFAR10', train=True, download=True, transform=transform,
+    dataset = CIFAR10(root=join(datasets, "CIFAR10"), train=True, download=True, transform=transform,
                       target_transform=target_transform)
 
 

@@ -6,8 +6,8 @@ import model.modelUtil as modelUtil
 from model.vwrapper import VWrapper
 from pruning.vhrank import VGG16HRank
 from federal.FLnodes import *
-from control.preEnv import *
-from control.runtimeEnv import *
+from env.preEnv import *
+from env.runtimeEnv import *
 
 sa = samplers.CF10NIIDSampler(num_slices, MAX_ROUND, data_per_client_epoch,
                               True, client_per_round)

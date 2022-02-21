@@ -1,4 +1,4 @@
-from control.pathHandler import HRankPathGather
+from env.pathHandler import HRankPathGather
 
 # get from json
 # get from arg-parser
@@ -14,9 +14,9 @@ limit = 5
 arch = "vgg16"
 
 # path
-datasets = 'localSet'
-ranks = 'ranks'
-vgg_model = 'results/vgg'
+datasets = 'res/datasets'
+ranks = 'res/milestone/ranks'
+vgg_model = 'res/checkpoint/vgg'
 
 # dataloader
 num_slices = 100

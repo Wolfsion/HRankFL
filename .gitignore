@@ -1,9 +1,17 @@
-localSet/*
-logs/*
-ranks/*
-testProc.py
-testLearn.py
 !.gitignore
-test.sh
-ranks.ret
+
+# static resource
+res/*
+res/datasets/*
+res/vgg/*
+res/milestone/ranks/*
+res/milestone/temp/ranks.ret
+logs/*
 test.pt
+
+# debug file
+testProc.py
+
+# remain file
+trash
+

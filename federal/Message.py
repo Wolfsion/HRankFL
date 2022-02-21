@@ -3,7 +3,7 @@ import torch.nn as nn
 from copy import deepcopy
 from collections import OrderedDict
 
-from control.preEnv import *
+from env.preEnv import *
 
 
 # Message type and Message operation

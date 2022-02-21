@@ -3,7 +3,8 @@ import torchvision
 import torchvision.transforms as transforms
 from os.path import join
 
-from control.preEnv import *
+from env.preEnv import *
+from env.runtimeEnv import *
 from data.transform import Flatten, OneHot, DataToTensor
 
 class DataLoader(torch.utils.data.DataLoader):
@@ -52,7 +53,7 @@ def get_data(dataset: str, data_type, transform=None, target_transform=None, use
             target_transform = transforms.Compose([DataToTensor(dtype=torch.long),
                                                    OneHot(CIFAR10_CLASSES, to_float=True)])
 
-        return torchvision.datasets.CIFAR10(root = join("localSet", "CIFAR10"), 
+        return torchvision.datasets.CIFAR10(root = join(datasets, "CIFAR10"),
                                             train = data_type == "train", download=True,
                                             transform = transform, 
                                             target_transform = target_transform)

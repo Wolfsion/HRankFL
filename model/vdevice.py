@@ -4,7 +4,7 @@ import torch
 from torch import nn
 import logging
 
-from control import vlogger
+from env import vlogger
 
 
 # 设备、模型、张量动态绑定
