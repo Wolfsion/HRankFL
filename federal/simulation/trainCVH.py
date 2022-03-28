@@ -1,10 +1,10 @@
 import random
 
-import data.samplers as samplers
-from data.dataProvider import get_data_loader
-import model.modelUtil as modelUtil
-from model.vwrapper import VWrapper
-from pruning.vhrank import VGG16HRank
+from dl import data as samplers
+from dl.data import get_data_loader
+import dl.model.modelUtil as modelUtil
+from dl.model.vwrapper import VWrapper
+from dl.compress import VGG16HRank
 from federal.FLnodes import *
 from env.preEnv import *
 from env.runtimeEnv import *

@@ -1,4 +1,4 @@
-from env.pathHandler import HRankPathGather
+from utils.pathHandler import HRankPathGather
 
 # get from json
 # get from arg-parser
@@ -24,7 +24,7 @@ data_per_client_epoch = 100
 client_per_round = 10
 workers = 10
 
-# pruning rate
+# compress rate
 compress_rate = [0.]*100
 candidate_rate = [0.45]*7 + [0.78]*5
 

@@ -1,5 +1,4 @@
 import pickle
-from copy import deepcopy
 from os.path import join
 
 import torch
@@ -10,8 +9,8 @@ from torchvision.datasets import CIFAR10
 import torchvision.transforms as transforms
 from collections import OrderedDict
 
-from model import modelUtil
-from pruning.vhrank import VGG16HRank
+from dl.model import modelUtil
+from dl.compress.phrank import VGG16HRank
 from env.runtimeEnv import *
 
 MEAN = [0.4914, 0.4822, 0.4465]
@@ -20,7 +19,7 @@ CLASSES = 10
 ORIGIN_CP_RATE = [0.] * 100
 VGG16 = join(vgg_model, "vgg_16_bn.pt")
 
-num_clients = 2
+num_clients = 1
 batch_size = 32
 
 dataset = None
@@ -92,6 +91,12 @@ def init_data_loaders():
         loaders_dict[i] = DataLoader(dataset, batch_size=batch_size, shuffle=False,
                                      sampler=samplers_dict[i], num_workers=8,
                                      pin_memory=True)
+def get_rank():
+    alg_obj = VGG16HRank(modelUtil.vgg_16_bn(ORIGIN_CP_RATE))
+    alg_obj.get_rank(loaders_dict[0], plus=True)
+    alg_obj.init_cp_model(candidate_rate)
+    alg_obj.load_params()
+    alg_obj.valid_performance()
 
 
 def get_ranks():
@@ -99,6 +104,7 @@ def get_ranks():
     for i in range(num_clients):
         hranks_dict[i] = VGG16HRank(modelUtil.vgg_16_bn(ORIGIN_CP_RATE))
         hranks_dict[i].wrapper.load_checkpoint(VGG16)
+
     global ranks_dict
     for i in range(num_clients):
         hranks_dict[i].get_rank(loaders_dict[i])
@@ -115,5 +121,4 @@ def main():
     init_datasets()
     init_samplers()
     init_data_loaders()
-    get_ranks()
-    store_ranks()
+    get_rank()

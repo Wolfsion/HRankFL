@@ -142,3 +142,12 @@ kwargs['alg'].deserialize_rank()
 + vdevice 161：
 
 self.model.load_state_dict(adapt_dict, False)
+
+
+
+
+
+## 优秀的开发
+
++ 提供健壮的接口
++ 提供合适的扩展编写方式

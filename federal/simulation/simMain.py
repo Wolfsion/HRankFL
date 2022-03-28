@@ -1,16 +1,6 @@
-from abc import ABC, abstractclassmethod
-import os
-import torch
-from torch.optim import lr_scheduler
-from collections import OrderedDict
-
-from env.argParser import PruningFLParser
-from env.preEnv import *
 from federal.FLnodes import *
-from data.samplers import CF10NIIDSampler
-from data.dataProvider import get_data_loader
 from federal.simulation.CVH import CVHRun
-from model.modelUtil import vgg_16_bn
+
 
 def main():
     # parser = PruningFLParser()
