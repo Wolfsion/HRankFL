@@ -7,10 +7,11 @@ from utils.vlogger import VLogger
 class DataSetType(Enum):
     LOWWER = 0
     CIFAR10 = 1
-    CelebA = 2
-    ImageNet = 3
-    FEMNIST = 4
-    UPPER = 5
+    CIFAR100 = 2
+    CelebA = 3
+    ImageNet = 4
+    FEMNIST = 5
+    UPPER = 6
 
 
 # Model Type
@@ -59,6 +60,11 @@ CIFAR10_CLASSES = 10
 CIFAR10_NUM_TRAIN_DATA = 50000
 CIFAR10_MEAN = [0.4914, 0.4822, 0.4465]
 CIFAR10_STD = [0.2023, 0.1994, 0.2010]
+
+# CIFAR100 const config
+CIFAR100_CLASSES = 100
+CIFAR100_MEAN = [0.5070751592371323, 0.48654887331495095, 0.4409178433670343]
+CIFAR100_STD = [0.2673342858792401, 0.2564384629170883, 0.27615047132568404]
 
 # VGG const config
 

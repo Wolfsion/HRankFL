@@ -7,6 +7,7 @@ from env.preEnv import *
 from env.runtimeEnv import *
 from dl.data.transform import OneHot, DataToTensor
 
+
 class DataLoader(torch.utils.data.DataLoader):
     def __init__(self, dataset, batch_size=1, shuffle=False, sampler=None, batch_sampler=None, num_workers=8,
                  collate_fn=None, pin_memory=False, drop_last=False, timeout=0, worker_init_fn=None,
@@ -28,6 +29,7 @@ class DataLoader(torch.utils.data.DataLoader):
     @property
     def len_data(self):
         return len(self.dataset)
+
 
 def get_data(dataset: str, data_type, transform=None, target_transform=None, user_list=None):
     if dataset == DataSetType.FEMNIST.name:
@@ -53,16 +55,40 @@ def get_data(dataset: str, data_type, transform=None, target_transform=None, use
             target_transform = transforms.Compose([DataToTensor(dtype=torch.long),
                                                    OneHot(CIFAR10_CLASSES, to_float=True)])
 
-        return torchvision.datasets.CIFAR10(root = join(datasets, "CIFAR10"),
-                                            train = data_type == "train", download=True,
-                                            transform = transform, 
-                                            target_transform = target_transform)
+        return torchvision.datasets.CIFAR10(root=join(datasets, "CIFAR10"),
+                                            train=data_type == "train", download=True,
+                                            transform=transform,
+                                            target_transform=target_transform)
 
-    elif dataset == DataSetType.ImageNet.name:
-        pass
+    elif dataset == DataSetType.CIFAR100:
+        assert data_type in ["train", "test"]
+        if transform is None:
+            mean = CIFAR100_MEAN
+            std = CIFAR100_STD
+            if data_type == "train":
+                transform = transforms.Compose([transforms.RandomHorizontalFlip(),
+                                                transforms.RandomCrop(32, 4),
+                                                transforms.ToTensor(),
+                                                transforms.Normalize(mean, std)])
+            else:
+                transform = transforms.Compose([transforms.ToTensor(),
+                                                transforms.Normalize(mean, std)])
+        if target_transform is None:
+            target_transform = transforms.Compose([DataToTensor(dtype=torch.long),
+                                                   OneHot(CIFAR100_CLASSES, to_float=True)])
+        return torchvision.datasets.CIFAR100(root=join(datasets, "CIFAR100"),
+                                             train=data_type == "train", download=True,
+                                             transform=transform,
+                                             target_transform=target_transform)
+
+    elif dataset == DataSetType.ImageNet:
+        assert data_type in ["train", "test"]
+        imagenet_data = torchvision.datasets.ImageNet(root=join(datasets, "ImageNet"), download=True)
+
 
     else:
         raise ValueError("{} dataset is not supported.".format(dataset))
+
 
 def get_data_loader(name: str, data_type, batch_size=None, shuffle: bool = False, sampler=None, transform=None,
                     target_transform=None, subset_indices=None, num_workers=8, pin_memory=False, user_list=None):

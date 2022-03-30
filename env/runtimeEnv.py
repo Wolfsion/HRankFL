@@ -8,7 +8,7 @@ from utils.pathHandler import HRankPathGather
 ###
 
 gpu = [0, 1]
-train_limit = 5000
+train_limit = 50000
 batch_size = 32
 
 valid_limit = 3
