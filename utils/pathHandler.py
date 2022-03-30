@@ -1,6 +1,10 @@
-from abc import ABC, abstractclassmethod
+from abc import ABC, abstractmethod
 import os
 import time
+
+
+def checkout(path: str):
+    return os.path.isdir(path)
 
 
 class PathGather(ABC):
@@ -11,28 +15,25 @@ class PathGather(ABC):
         self.dpath: str = dataset
         self.config_dir = 'configs'
 
-    @abstractclassmethod
+    @abstractmethod
     def model_dir(self):
         pass
 
-    @abstractclassmethod
+    @abstractmethod
     def model_name(self):
         pass
 
-    @abstractclassmethod
+    @abstractmethod
     def model(self):
         pass
 
-    @abstractclassmethod
+    @abstractmethod
     def dataset_dir(self):
         pass
 
-    @abstractclassmethod
+    @abstractmethod
     def configs(self):
         pass
-
-    def checkout(self, path: str):
-        return os.path.isdir(path)
 
 
 def curt_time_stamp():
@@ -49,7 +50,7 @@ class HRankPathGather(PathGather):
         self.rank_index = 0
 
     def model_dir(self):
-        assert self.checkout(self.mpath), self.ERROR_MESS1
+        assert checkout(self.mpath), self.ERROR_MESS1
         return self.mpath
 
     def model_name(self):
@@ -62,11 +63,11 @@ class HRankPathGather(PathGather):
             return os.path.join(self.model_dir(), self.model_name())
 
     def dataset_dir(self):
-        assert self.checkout(self.dpath), self.ERROR_MESS1
+        assert checkout(self.dpath), self.ERROR_MESS1
         return self.dpath
 
     def rank_dir(self):
-        assert self.checkout(self.rpath), self.ERROR_MESS1
+        assert checkout(self.rpath), self.ERROR_MESS1
         return self.rpath
 
     def rank_name(self):

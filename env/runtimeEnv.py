@@ -8,7 +8,9 @@ from utils.pathHandler import HRankPathGather
 ###
 
 gpu = [0, 1]
-train_limit = 5
+train_limit = 5000
+batch_size = 32
+
 valid_limit = 3
 limit = 5 
 arch = "vgg16"
@@ -20,7 +22,7 @@ vgg_model = 'res/checkpoint/vgg'
 
 # dataloader
 num_slices = 100
-data_per_client_epoch = 100
+data_per_client_epoch = train_limit * batch_size
 client_per_round = 10
 workers = 10
 
@@ -36,3 +38,4 @@ candidate_rate = [0.45]*7 + [0.78]*5
 
 # Path
 file_repo = HRankPathGather(vgg_model, datasets, ranks)
+

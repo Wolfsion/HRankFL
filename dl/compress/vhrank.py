@@ -69,7 +69,8 @@ class VGG16HRank(HRank):
         self.cp_model_sd = None
 
         self.curt_dict = None
-        self.curt_batch = None
+        self.curt_inputs = None
+        self.all_batch = 0
 
     # ## debug
     # @classmethod
@@ -169,9 +170,13 @@ class VGG16HRank(HRank):
         correct = 0
         total = 0
         for batch_idx, (inputs, targets) in enumerate(loader):
+            self.all_batch += 1
             if batch_idx >= train_limit:
+                self.valid_performance(loader)
+                self.interrupt()
                 break
-            loss, cort = self.wrapper.step_eva(inputs, targets, train=True)
+
+            loss, cort = self.wrapper.step(inputs, targets, train=True)
             test_loss += loss
             correct += cort
             total += targets.size(0)
@@ -179,7 +184,7 @@ class VGG16HRank(HRank):
                                % (batch_idx, test_loss / (batch_idx + 1), 100. * correct / total, correct, total))
 
         self.curt_dict = self.wrapper.model.state_dict()
-        self.curt_batch = total
+        self.curt_inputs = total
 
     def feed_run(self, loader: tdata.DataLoader):
         test_loss = 0
@@ -202,7 +207,7 @@ class VGG16HRank(HRank):
                 if batch_idx >= limit:
                     break
 
-                loss, cort = self.wrapper.step_eva(inputs, targets)
+                loss, cort = self.wrapper.step(inputs, targets)
 
                 test_loss += loss
                 correct += cort
@@ -217,8 +222,10 @@ class VGG16HRank(HRank):
 
     def valid_performance(self, loader: tdata.DataLoader):
         wrapper = VWrapper(self.cp_model)
-        with torch.no_grad():
-            (inputs, targets) = next(loader)
-            loss, cort = wrapper.step_eva(inputs, targets)
-            GLOBAL_LOGGER.info('Valid performance | Loss: %.3f | Acc: %.3f%% (%d/%d)'
-                               % (loss, 100. * cort / targets.size(0), cort, targets.size(0)))
+        modelUtil.valid_performance(loader, wrapper)
+
+    def interrupt(self):
+        self.wrapper.save_checkpoint("inter")
+
+    def restore(self):
+        pass

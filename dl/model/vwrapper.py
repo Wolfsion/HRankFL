@@ -8,10 +8,9 @@ from torch.nn.functional import binary_cross_entropy_with_logits
 
 from env.preEnv import *
 from env.runtimeEnv import *
-from dl.model import vdevice
+from dl.model import vdevice, modelUtil
 
 
-# 性能开销测量 profile(FLOPS, params)
 # 配置保存与加载
 
 class SGD(optim.SGD):
@@ -86,6 +85,7 @@ class VWrapper:
         self.model = model
         self.loss_func = loss
         self.device = device
+
         if device is None:
             self.device = vdevice.VADevice(True, gpu)
         self.model = self.device.bind_model(self.model)
@@ -101,16 +101,16 @@ class VWrapper:
         self.lr_scheduler = lr_scheduler.StepLR(self.optimizer, step_size=1,
                                                 gamma=0.5 ** (1 / LR_HALF_LIFE))
 
-    def step(self, inputs, labels):
-        self.zero_grad()
-        self.model.train()
-        inputs, labels = self.device.on_tensor(inputs, labels)
-        pred = self.model(inputs)
-        loss = self.loss_func(pred, labels)
-        loss.backward()
-        return self.optimizer.step()
+    # def step(self, inputs, labels):
+    #     self.zero_grad()
+    #     self.model.train()
+    #     inputs, labels = self.device.on_tensor(inputs, labels)
+    #     pred = self.model(inputs)
+    #     loss = self.loss_func(pred, labels)
+    #     loss.backward()
+    #     return self.optimizer.step()
 
-    def step_eva(self, inputs, labels, train=False):
+    def step(self, inputs, labels, train=False):
         if train:
             self.zero_grad()
             self.model.train()
@@ -122,6 +122,9 @@ class VWrapper:
         inputs, labels = self.device.on_tensor(inputs, labels)
         pred = self.model(inputs)
         loss = self.loss_func(pred, labels)
+        if train:
+            loss.backward()
+            self.optim_step()
         test_loss += loss.item()
         _, predicted = pred.max(1)
         _, targets = labels.max(1)
@@ -131,7 +134,8 @@ class VWrapper:
     def zero_grad(self):
         self.model.zero_grad()
 
-    def lr_scheduler_step(self):
+    def optim_step(self):
+        self.optimizer.step()
         if self.lr_scheduler is not None:
             self.lr_scheduler.step()
 
@@ -144,18 +148,16 @@ class VWrapper:
     def access_model(self) -> nn.Module:
         return self.device.access_model()
 
-    def performance_overhead(self, loader: tdata.DataLoader):
-        pass
-
-    def save_checkpoint(self):
+    # to finish
+    def save_checkpoint(self, ext_info: str):
         # exp_const_config = {"exp_name": CIFAR10_NAME, "batch_size": CLIENT_BATCH_SIZE,
         #                     "num_local_updates": NUM_LOCAL_UPDATES, "init_lr": INIT_LR,
         #                     "lrhl": LR_HALF_LIFE}
+        exp_const_config = {"exp_name": CIFAR10_NAME, "state_dict": self.device.freeze_model()}
         # args_config = vars(self.args)
         # configs = exp_const_config.copy()
         # configs.update(args_config)
-        # modelUtil.mkdir_save(configs, file_repo.configs('exp_config.snap'))
-        pass
+        modelUtil.mkdir_save(exp_const_config, file_repo.configs('exp_config.snap'))
 
     # !
     def load_checkpoint(self, path: str, model_key: str = 'state_dict'):

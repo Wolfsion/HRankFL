@@ -46,7 +46,7 @@ class VGG(nn.Module):
         x = self.classifier(x)
         return x
 
-    def origin_model():
+    def origin_model(self):
         pass
     
-    origin_params:OrderedDict = origin_model()
+    # origin_params:OrderedDict = origin_model()

@@ -129,16 +129,18 @@ class VADevice:
         for t in tensors:
             yield t.to(self.device)
 
+    # eval() insecure!!!
     def access_model(self) -> nn.Module:
         self.expression_access = "self.model.module" if self.GPUs else "self.model"
         return eval(self.expression_access)
 
+    def freeze_model(self) -> dict:
+        assert self.model is not None, self.ERROR_MESS2
+        return self.access_model().state_dict()
+
     def save_model(self, path: str):
         assert self.model is not None, self.ERROR_MESS2
-        if len(self.dev_list) > 1:
-            torch.save(self.model.module.state_dict(), path)
-        else:
-            torch.save(self.model.state_dict(), path)
+        torch.save(self.access_model().state_dict(), path)
 
     def load_model(self, path_or_dic):
         assert self.model is not None, self.ERROR_MESS2
