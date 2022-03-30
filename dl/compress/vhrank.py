@@ -222,7 +222,7 @@ class VGG16HRank(HRank):
 
     def valid_performance(self, loader: tdata.DataLoader):
         wrapper = VWrapper(self.cp_model)
-        modelUtil.valid_performance(loader, wrapper)
+        wrapper.valid_performance(loader)
 
     def interrupt(self):
         self.wrapper.save_checkpoint("inter")

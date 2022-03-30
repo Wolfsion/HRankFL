@@ -11,7 +11,7 @@ from copy import deepcopy
 from dl.model import vgg
 from env.preEnv import *
 from env.runtimeEnv import *
-from dl.model.vwrapper import VWrapper
+
 
 hasParameter = lambda x: len(list(x.parameters())) != 0
 
@@ -75,41 +75,3 @@ def pickle_load(f):
         opened_f.close()
     return obj
 
-
-def valid_performance(loader: tdata.DataLoader, wrapper: VWrapper):
-    first_feed = True
-    flops = 0
-    params = 0
-    test_loss = 0
-    correct = 0
-    total = 0
-
-    time_start = timer()
-    with torch.no_grad():
-        for batch_idx, (inputs, targets) in enumerate(loader):
-            if first_feed:
-                tmp = deepcopy(wrapper.model.module)
-                flops, params = profile(tmp.cpu(), inputs=(inputs,))
-                first_feed = False
-
-            if batch_idx >= valid_limit:
-                break
-
-            loss, cort = wrapper.step_eva(inputs, targets)
-            test_loss += loss
-            correct += cort
-
-            total += targets.size(0)
-
-    time_cost = timer() - time_start
-    total_params = sum(p.numel() for p in wrapper.model.parameters())
-    total_trainable_params = sum(p.numel() for p in wrapper.model.parameters() if p.requires_grad)
-
-    GLOBAL_LOGGER.info('Loss: %.3f | Acc: %.3f%% (%d/%d)'
-                       % (test_loss / valid_limit, 100. * correct / total, correct, total))
-
-    GLOBAL_LOGGER.info('Time cost: %.3f | FLOPs: %d | Params: %d'
-                       % (time_cost, flops, params))
-
-    GLOBAL_LOGGER.info('Total params: %d | Trainable params: %d'
-                       % (total_params, total_trainable_params))

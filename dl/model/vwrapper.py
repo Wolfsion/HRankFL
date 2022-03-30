@@ -1,10 +1,14 @@
+from copy import deepcopy
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data as tdata
+from thop import profile
 from torch.optim import lr_scheduler
 from torch.optim.optimizer import Optimizer
 from torch.nn.functional import binary_cross_entropy_with_logits
+from timeit import default_timer as timer
 
 from env.preEnv import *
 from env.runtimeEnv import *
@@ -164,3 +168,41 @@ class VWrapper:
         checkpoint = torch.load(path)
         assert model_key in checkpoint.keys(), self.ERROR_MESS1
         self.device.load_model(checkpoint[model_key])
+
+    def valid_performance(self, loader: tdata.DataLoader):
+        first_feed = True
+        flops = 0
+        params = 0
+        test_loss = 0
+        correct = 0
+        total = 0
+
+        time_start = timer()
+        with torch.no_grad():
+            for batch_idx, (inputs, targets) in enumerate(loader):
+                if first_feed:
+                    tmp = deepcopy(self.model.module)
+                    flops, params = profile(tmp.cpu(), inputs=(inputs,))
+                    first_feed = False
+
+                if batch_idx >= valid_limit:
+                    break
+
+                loss, cort = self.step(inputs, targets)
+                test_loss += loss
+                correct += cort
+
+                total += targets.size(0)
+
+        time_cost = timer() - time_start
+        total_params = sum(p.numel() for p in self.model.parameters())
+        total_trainable_params = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
+
+        GLOBAL_LOGGER.info('Loss: %.3f | Acc: %.3f%% (%d/%d)'
+                           % (test_loss / valid_limit, 100. * correct / total, correct, total))
+
+        GLOBAL_LOGGER.info('Time cost: %.3f | FLOPs: %d | Params: %d'
+                           % (time_cost, flops, params))
+
+        GLOBAL_LOGGER.info('Total params: %d | Trainable params: %d'
+                           % (total_params, total_trainable_params))

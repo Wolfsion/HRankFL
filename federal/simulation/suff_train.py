@@ -2,7 +2,7 @@
 # init vhrank
 # run federal learning
 # save
-from dl.compress.phrank import VGG16HRank
+from dl.compress.vhrank import VGG16HRank
 from dl.model import modelUtil
 from env.preEnv import *
 from dl.data import samplers
