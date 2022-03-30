@@ -19,7 +19,8 @@ def single_convergence():
                              num_workers=4, pin_memory=True)
     GLOBAL_LOGGER.info("Sampler initialized")
     hrank_obj = VGG16HRank(modelUtil.vgg_16_bn(ORIGIN_CP_RATE))
-    hrank_obj.learn_run(loader)
+    for i in range(5):
+        hrank_obj.learn_run(loader)
 
 def union_convergence():
     sampler = samplers.CF10NIIDSampler(100, 10001, 32, True, 10)
