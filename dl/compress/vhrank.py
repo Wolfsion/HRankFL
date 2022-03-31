@@ -173,7 +173,7 @@ class VGG16HRank(HRank):
         while True:
             try:
                 self.all_batch += 1
-                inputs, targets = next(loader)
+                inputs, targets = next(iter(loader))
                 # single train config
                 # if batch_idx >= train_limit:
                 #     self.valid_performance(loader)
@@ -181,7 +181,7 @@ class VGG16HRank(HRank):
                 #     break
                 # union train config
                 if batch_idx >= union_train_limit:
-                    self.valid_performance(loader)
+                    self.wrapper.valid_performance(loader)
                     break
 
                 loss, cort = self.wrapper.step(inputs, targets, train=True)

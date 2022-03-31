@@ -46,10 +46,10 @@ def union_convergence():
         for idx in range(num_slices):
             hrank_objs[idx].restore_mem(union_dict)
 
-    hrank_objs[0].valid_performance(workers_loaders)
+    hrank_objs[0].wrapper.valid_performance(workers_loaders)
     hrank_objs[0].interrupt_disk()
 
 
 
 def main():
-    single_convergence()
+    union_convergence()
