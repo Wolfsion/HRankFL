@@ -8,7 +8,8 @@ from utils.pathHandler import HRankPathGather
 ###
 
 gpu = [0, 1]
-train_limit = 50000
+train_limit = 5000
+union_train_limit = 5
 batch_size = 32
 
 valid_limit = 3
@@ -22,7 +23,7 @@ vgg_model = 'res/checkpoint/vgg'
 
 # dataloader
 num_slices = 100
-data_per_client_epoch = train_limit * batch_size
+data_per_client_epoch = union_train_limit * batch_size
 client_per_round = 10
 workers = 10
 

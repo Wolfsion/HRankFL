@@ -1,4 +1,6 @@
 import random
+from typing import List
+
 import torch
 from abc import ABC, abstractmethod
 from torch.utils.data import Sampler
@@ -105,9 +107,12 @@ class IIDSampler(LSampler):
 
 
 class CF10NIIDSampler(LSampler):
+    ERROR_MESS1 = "The idx_selected is null."
+
     def __init__(self, num_slices, num_round, data_per_client,
                  client_selection: bool, client_per_round=None, seed=1, datatype=1):
         self.seed = seed
+        self.idx_selected = []
         super().__init__(datatype, num_slices, num_round, data_per_client,
                          client_selection, client_per_round)
 
@@ -129,13 +134,18 @@ class CF10NIIDSampler(LSampler):
         for _ in range(num_round):
             if client_selection:
                 selected_client_idx = random.sample(range_partition, client_per_round)
+                self.idx_selected.append(selected_client_idx)
             else:
                 selected_client_idx = range_partition
 
-        for client_idx in selected_client_idx:
-            ind = tmp_indices[client_idx]
-            pos = list_pos[client_idx]
-            while len(new_list_ind[client_idx]) < pos + data_per_client:
-                new_list_ind[client_idx].extend(ind)
-            self.indices.extend(new_list_ind[client_idx][pos:pos + data_per_client])
-            list_pos[client_idx] = pos + data_per_client
+            for client_idx in selected_client_idx:
+                ind = tmp_indices[client_idx]
+                pos = list_pos[client_idx]
+                while len(new_list_ind[client_idx]) < pos + data_per_client:
+                    new_list_ind[client_idx].extend(ind)
+                self.indices.extend(new_list_ind[client_idx][pos:pos + data_per_client])
+                list_pos[client_idx] = pos + data_per_client
+
+    def curt_selected(self) -> List[List[int]]:
+        assert len(self.idx_selected) != 0, self.ERROR_MESS1
+        return self.idx_selected

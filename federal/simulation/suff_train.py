@@ -1,17 +1,17 @@
-# init loader
-# init vhrank
-# run federal learning
-# save
 from dl.compress.vhrank import VGG16HRank
 from dl.model import modelUtil
 from env.preEnv import *
 from dl.data import samplers
 from dl.data.dataProvider import get_data_loader
 from dl.data.dataProvider import get_data
+from env.runtimeEnv import *
+from federal.merge.FedAvg import FedAvg
+
 
 def init_datasets():
     get_data(DataSetType.CIFAR100, data_type="train")
     get_data(DataSetType.ImageNet, data_type="train")
+
 
 def single_convergence():
     loader = get_data_loader(CIFAR10_NAME, data_type="train",
@@ -22,9 +22,33 @@ def single_convergence():
     for i in range(5):
         hrank_obj.learn_run(loader)
 
+
+
 def union_convergence():
-    sampler = samplers.CF10NIIDSampler(100, 10001, 32, True, 10)
-    pass
+    list_dict = []
+    union_dict = dict()
+    fedavg = FedAvg()
+    sampler = samplers.CF10NIIDSampler(num_slices, 100, data_per_client_epoch, True, client_per_round)
+    workers_loaders = get_data_loader(CIFAR10_NAME, data_type="train",
+                                      batch_size=32, shuffle=False,
+                                      sampler=sampler, num_workers=4, pin_memory=True)
+
+    hrank_objs = [VGG16HRank(modelUtil.vgg_16_bn(ORIGIN_CP_RATE)) for _ in range(num_slices)]
+
+    for rnd in range(10):
+        curt_selected = sampler.curt_selected()
+        for idx in curt_selected[rnd]:
+            hrank_objs[idx].learn_run(workers_loaders)
+            list_dict.append(hrank_objs[idx].interrupt_mem())
+
+        union_dict = fedavg.merge_dict(list_dict, [1 for _ in range(client_per_round)])
+
+        for idx in range(num_slices):
+            hrank_objs[idx].restore_mem(union_dict)
+
+    hrank_objs[0].valid_performance(workers_loaders)
+    hrank_objs[0].interrupt_disk()
+
 
 
 def main():
