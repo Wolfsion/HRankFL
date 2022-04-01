@@ -81,10 +81,10 @@ def pickle_load(f):
 
 
 def dict_diff(dict1: dict, dict2: dict):
-    for k, v in zip(dict1.items(), dict2.items()):
-        if k[0] != k[1]:
-            GLOBAL_LOGGER.info('dict1_key:', k[0])
-            GLOBAL_LOGGER.info('dict2_key:', k[1])
+    for (k1, v1), (k2, v2) in zip(dict1.items(), dict2.items()):
+        if k1 != k2:
+            GLOBAL_LOGGER.info('Key beq:dict1_key:', k1)
+            GLOBAL_LOGGER.info('Key beq:dict2_key:', k2)
         else:
-            if v[0] != v[1]:
-                GLOBAL_LOGGER.info(f"The value of key:{k[0]} is not equal.")
+            if not v1.equal(v2):
+                GLOBAL_LOGGER.info(f"The value of key:{k1} is not equal.")

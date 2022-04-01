@@ -3,9 +3,13 @@
 from federal.simulation.suff_train import main
 #from visual.test_unit import main
 import sys
-from signal import signal, SIGPIPE, SIG_DFL
 
 if __name__ == "__main__":
-    # 让 python 忽略 SIGPIPE 信号，并且不抛出异常
-    # signal(SIGPIPE, SIG_DFL)
-    main()
+    # main()
+    import torch
+    import torchvision
+    from dl.model import modelUtil
+    vgg1 = torchvision.models.vgg16()
+    dict1 = vgg1.state_dict()
+    dict2 = vgg1.state_dict()
+    modelUtil.dict_diff(dict1, dict2)
