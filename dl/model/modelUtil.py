@@ -12,8 +12,8 @@ from dl.model import vgg
 from env.preEnv import *
 from env.runtimeEnv import *
 
-
 hasParameter = lambda x: len(list(x.parameters())) != 0
+
 
 def traverse(model: nn.Module):
     list1 = []
@@ -23,12 +23,13 @@ def traverse(model: nn.Module):
     list3 = [list1[ly_id] for ly_id in prunable_nums]
     list4 = [list2[ly_id] for ly_id in prunable_nums]
     ret = {
-            "param_layers":list1, 
-            "param_layer_prefixes":list2, 
-            "prunable_layers":list3, 
-            "prunable_layer_prefixes":list4
-        }
+        "param_layers": list1,
+        "param_layer_prefixes": list2,
+        "prunable_layers": list3,
+        "prunable_layer_prefixes": list4
+    }
     return ret
+
 
 def traverse_module(module, criterion, layers: list, names: list, prefix="", leaf_only=True):
     if leaf_only:
@@ -45,8 +46,10 @@ def traverse_module(module, criterion, layers: list, names: list, prefix="", lea
     else:
         raise NotImplementedError("Supports only leaf modules")
 
+
 def vgg_16_bn(compress_rate):
     return vgg.VGG(compress_rate=compress_rate)
+
 
 def model_device(model: nn.Module):
     curt = str(next(model.parameters()).device)
@@ -55,7 +58,8 @@ def model_device(model: nn.Module):
     else:
         return CPU
 
-# load obj not only model: nn.Moudle      
+
+# load obj not only model: nn.Moudle
 def mkdir_save(obj, f):
     dir_name = os.path.dirname(f)
     if dir_name != "":
@@ -75,3 +79,12 @@ def pickle_load(f):
         opened_f.close()
     return obj
 
+
+def dict_diff(dict1: dict, dict2: dict):
+    for k, v in zip(dict1.items(), dict2.items()):
+        if k[0] != k[1]:
+            GLOBAL_LOGGER.info('dict1_key:', k[0])
+            GLOBAL_LOGGER.info('dict2_key:', k[1])
+        else:
+            if v[0] != v[1]:
+                GLOBAL_LOGGER.info(f"The value of key:{k[0]} is not equal.")
