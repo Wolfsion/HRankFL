@@ -14,5 +14,7 @@ testProc.py
 
 # remain file
 trash
+dl/compress/trash
+dl/model/trash
 
 sync.cmd

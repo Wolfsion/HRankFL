@@ -32,6 +32,18 @@ workers = 10
 compress_rate = [0.]*100
 candidate_rate = [0.45]*7 + [0.78]*5
 
+# vgg16_bn
+vgg16_candidate_rate = [0.45]*7 + [0.78]*5
+
+# resnet50
+resnet50_candidate_rate = [0.1] + [0.2]*3 + [0.5]*16
+
+# resnet56
+resnet56_candidate_rate = [0.] + [0.18]*29
+
+# mobilenetv2
+mobile_candidate_rate = [0.] + [0.3]*7
+
 # PruningFL
 
 ### 

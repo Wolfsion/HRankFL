@@ -31,7 +31,7 @@ class VGG(nn.Module):
             else:
                 x = int(x * (1-self.compress_rate[cnt]))
 
-                cnt+=1
+                cnt += 1
                 conv2d = nn.Conv2d(in_channels, x, kernel_size=3, padding=1)
                 layers.add_module('conv%d' % i, conv2d)
                 layers.add_module('norm%d' % i, nn.BatchNorm2d(x))

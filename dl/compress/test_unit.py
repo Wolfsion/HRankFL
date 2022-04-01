@@ -1,8 +1,7 @@
 import torch
 
-from dl.data.test_unit import loader_pool
 from dl.model.modelUtil import valid_performance, vgg_16_bn
-from dl.compress.irank import IterRank
+from dl.compress.trash.irank import IterRank
 from env.preEnv import *
 from env.runtimeEnv import *
 

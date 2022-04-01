@@ -39,6 +39,7 @@ class VisBoard:
 
     def single_var_dist(self, axis: str, form: str):
         mode = self.map_int(form)
+        data_list = self.io.map_vars(axis)
         x = [1, 2, 3, 4]
         sns.displot(x)
         plt.savefig(file_repo.img("test"))

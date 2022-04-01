@@ -10,7 +10,7 @@ import torchvision.transforms as transforms
 from collections import OrderedDict
 
 from dl.model import modelUtil
-from dl.compress.phrank import VGG16HRank
+from dl.compress.trash.phrank import VGG16HRank
 from env.runtimeEnv import *
 
 MEAN = [0.4914, 0.4822, 0.4465]

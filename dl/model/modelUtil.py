@@ -8,9 +8,12 @@ from thop import profile
 from timeit import default_timer as timer
 from copy import deepcopy
 
-from dl.model import vgg
+from dl.model.mobilenet import MobileNetV2
+from dl.model.resnet import ResNet, BasicBlock
+from dl.model.vgg import VGG
 from env.preEnv import *
 from env.runtimeEnv import *
+
 
 hasParameter = lambda x: len(list(x.parameters())) != 0
 
@@ -48,7 +51,19 @@ def traverse_module(module, criterion, layers: list, names: list, prefix="", lea
 
 
 def vgg_16_bn(compress_rate):
-    return vgg.VGG(compress_rate=compress_rate)
+    return VGG(compress_rate=compress_rate)
+
+
+def resnet_56(compress_rate):
+    return ResNet(BasicBlock, 56, compress_rate=compress_rate)
+
+
+def resnet_110(compress_rate):
+    return ResNet(BasicBlock, 110, compress_rate=compress_rate)
+
+
+def mobilenet_v2(compress_rate):
+    return MobileNetV2(compress_rate=compress_rate, width_mult=1)
 
 
 def model_device(model: nn.Module):
