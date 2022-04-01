@@ -253,7 +253,10 @@ class VGG16HRank(HRank):
         self.wrapper.save_checkpoint("inter")
 
     def restore_disk(self, path: str = None):
-        self.wrapper.load_checkpoint(file_repo.configs('exp_config.snap'))
+        if path is None:
+            self.wrapper.load_checkpoint(file_repo.configs('exp_config.snap'))
+        else:
+            self.wrapper.load_checkpoint(file_repo.configs(path))
 
     def interrupt_mem(self) -> dict:
         return self.wrapper.model.state_dict()
