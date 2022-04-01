@@ -16,11 +16,12 @@ def init_datasets():
 def single_convergence():
     loader = get_data_loader(CIFAR10_NAME, data_type="train",
                              batch_size=32, shuffle=False,
-                             num_workers=4, pin_memory=True)
+                             num_workers=0, pin_memory=True)
     GLOBAL_LOGGER.info("Sampler initialized")
     hrank_obj = VGG16HRank(modelUtil.vgg_16_bn(ORIGIN_CP_RATE))
-    for i in range(5):
+    for i in range(100):
         hrank_obj.learn_run(loader)
+    hrank_obj.wrapper.valid_performance(loader)
 
 
 def union_convergence():
