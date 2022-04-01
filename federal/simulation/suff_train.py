@@ -27,7 +27,7 @@ def single_convergence():
     GLOBAL_LOGGER.info('Test Loader------')
     hrank_obj.wrapper.valid_performance(test_loader)
 
-    hrank_obj.restore_disk('single.snap')
+    hrank_obj.interrupt_disk('single.snap')
 
 
 def union_convergence():
@@ -58,7 +58,7 @@ def union_convergence():
                                   shuffle=True, num_workers=0, pin_memory=True)
     GLOBAL_LOGGER.info('Test Loader------')
     hrank_objs[0].wrapper.valid_performance(test_loader)
-    hrank_objs[0].restore_disk('union.snap')
+    hrank_objs[0].interrupt_disk('union.snap')
 
 
 def test_checkpoint():

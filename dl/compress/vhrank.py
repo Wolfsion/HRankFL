@@ -249,8 +249,11 @@ class VGG16HRank(HRank):
         wrapper = VWrapper(self.cp_model)
         wrapper.valid_performance(loader)
 
-    def interrupt_disk(self, path: str = None):
-        self.wrapper.save_checkpoint("inter")
+    def interrupt_disk(self, name: str = None):
+        if name is None:
+            self.wrapper.save_checkpoint(file_repo.configs('exp_config.snap'))
+        else:
+            self.wrapper.save_checkpoint(file_repo.configs(name))
 
     def restore_disk(self, path: str = None):
         if path is None:

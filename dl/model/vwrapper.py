@@ -155,7 +155,7 @@ class VWrapper:
         return self.device.access_model()
 
     # to finish
-    def save_checkpoint(self, ext_info: str):
+    def save_checkpoint(self, file_path: str):
         # exp_const_config = {"exp_name": CIFAR10_NAME, "batch_size": CLIENT_BATCH_SIZE,
         #                     "num_local_updates": NUM_LOCAL_UPDATES, "init_lr": INIT_LR,
         #                     "lrhl": LR_HALF_LIFE}
@@ -163,7 +163,7 @@ class VWrapper:
         # args_config = vars(self.args)
         # configs = exp_const_config.copy()
         # configs.update(args_config)
-        modelUtil.mkdir_save(exp_const_config, file_repo.configs('exp_config.snap'))
+        modelUtil.mkdir_save(exp_const_config, file_path)
 
     # !
     def load_checkpoint(self, path: str, model_key: str = 'state_dict'):
