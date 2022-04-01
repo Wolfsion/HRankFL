@@ -191,6 +191,7 @@ class VGG16HRank(HRank):
                 GLOBAL_LOGGER.info('Train:batch_idx:%d | Loss: %.3f | Acc: %.3f%% (%d/%d)'
                                    % (batch_idx, test_loss / (batch_idx + 1), 100. * correct / total, correct, total))
                 batch_idx += 1
+
             except StopIteration:
                 self.valid_performance(loader)
                 self.interrupt_disk()
@@ -242,7 +243,7 @@ class VGG16HRank(HRank):
         self.wrapper.save_checkpoint("inter")
 
     def restore_disk(self, path: str = None):
-        pass
+        self.wrapper.load_checkpoint(file_repo.configs('exp_config.snap'))
 
     def interrupt_mem(self) -> dict:
         return self.wrapper.model.state_dict()

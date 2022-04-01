@@ -23,7 +23,6 @@ def single_convergence():
         hrank_obj.learn_run(loader)
 
 
-
 def union_convergence():
     list_dict = []
     union_dict = dict()
@@ -53,6 +52,18 @@ def union_convergence():
     hrank_objs[0].wrapper.valid_performance(test_loader)
     hrank_objs[0].interrupt_disk()
 
+
+def test_checkpoint():
+    hrank_obj = VGG16HRank(modelUtil.vgg_16_bn(ORIGIN_CP_RATE))
+    hrank_obj.restore_disk()
+    workers_loader = get_data_loader(CIFAR10_NAME, data_type="train", batch_size=32,
+                                     shuffle=False, num_workers=4, pin_memory=True)
+    test_loader = get_data_loader(CIFAR10_NAME, data_type="test", batch_size=32,
+                                  shuffle=False, num_workers=4, pin_memory=True)
+    GLOBAL_LOGGER.info('Train Loader------')
+    hrank_obj.wrapper.valid_performance(workers_loader)
+    GLOBAL_LOGGER.info('Test Loader------')
+    hrank_obj.wrapper.valid_performance(test_loader)
 
 
 def main():
