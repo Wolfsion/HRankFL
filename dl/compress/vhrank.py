@@ -170,33 +170,43 @@ class VGG16HRank(HRank):
         correct = 0
         total = 0
         batch_idx = 0
-        while True:
-            try:
-                self.all_batch += 1
-                inputs, targets = next(iter(loader))
-                # single train config
-                # if batch_idx >= train_limit:
-                #     self.valid_performance(loader)
-                #     self.interrupt_disk()
-                #     break
-                # union train config
-                if batch_idx >= union_train_limit:
-                    # self.wrapper.valid_performance(loader)
-                    break
-
-                loss, cort = self.wrapper.step(inputs, targets, train=True)
-                test_loss += loss
-                correct += cort
-                total += targets.size(0)
-                GLOBAL_LOGGER.info('Train:batch_idx:%d | Loss: %.3f | Acc: %.3f%% (%d/%d)'
-                                   % (batch_idx, test_loss / (batch_idx + 1), 100. * correct / total, correct, total))
-                batch_idx += 1
-
-            except StopIteration:
-                self.valid_performance(loader)
-                self.interrupt_disk()
-                GLOBAL_LOGGER.info('The loader is over.')
+        # while True:
+        #     try:
+        #         self.all_batch += 1
+        #         inputs, targets = next(iter(loader))
+        #         # single train config
+        #         # if batch_idx >= train_limit:
+        #         #     self.valid_performance(loader)
+        #         #     self.interrupt_disk()
+        #         #     break
+        #         # union train config
+        #         if batch_idx >= union_train_limit:
+        #             # self.wrapper.valid_performance(loader)
+        #             break
+        #
+        #         loss, cort = self.wrapper.step(inputs, targets, train=True)
+        #         test_loss += loss
+        #         correct += cort
+        #         total += targets.size(0)
+        #         GLOBAL_LOGGER.info('Train:batch_idx:%d | Loss: %.3f | Acc: %.3f%% (%d/%d)'
+        #                            % (batch_idx, test_loss / (batch_idx + 1), 100. * correct / total, correct, total))
+        #         batch_idx += 1
+        #
+        #     except StopIteration:
+        #         self.valid_performance(loader)
+        #         self.interrupt_disk()
+        #         GLOBAL_LOGGER.info('The loader is over.')
+        #         break
+        for batch_idx, (inputs, targets) in enumerate(loader):
+            if batch_idx >= union_train_limit:
                 break
+
+            loss, cort = self.wrapper.step(inputs, targets, train=True)
+
+            test_loss += loss
+            correct += cort
+            total += targets.size(0)
+            GLOBAL_LOGGER.info("batch_idx:%d | Loss: %.3f | Acc: %.3f%% (%d/%d)" % (batch_idx, test_loss / (batch_idx + 1), 100. * correct / total, correct, total))
 
         self.curt_dict = self.wrapper.model.state_dict()
         self.curt_inputs = total
