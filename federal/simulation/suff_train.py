@@ -6,6 +6,7 @@ from dl.data.dataProvider import get_data_loader
 from dl.data.dataProvider import get_data
 from env.runtimeEnv import *
 from federal.merge.FedAvg import FedAvg
+import dictdiffer
 
 
 def init_datasets():
@@ -49,19 +50,32 @@ def union_convergence():
 
         list_dict.clear()
 
+    train_loader = get_data_loader(CIFAR10_NAME, data_type="train", batch_size=32,
+                                   shuffle=False, num_workers=4, pin_memory=True)
+    test_loader = get_data_loader(CIFAR10_NAME, data_type="test", batch_size=32,
+                                  shuffle=False, num_workers=4, pin_memory=True)
+    GLOBAL_LOGGER.info('Train Loader------')
+    hrank_objs[0].wrapper.valid_performance(train_loader)
+    GLOBAL_LOGGER.info('Test Loader------')
     hrank_objs[0].wrapper.valid_performance(test_loader)
-    hrank_objs[0].interrupt_disk()
+
+    dict1 = hrank_objs[0].wrapper.model.state_dict()
+    dict2 = union_dict
+    GLOBAL_LOGGER('compare dict......')
+    for diff in list(dictdiffer.diff(dict1, dict2)):
+        print(diff)
+
 
 
 def test_checkpoint():
     hrank_obj = VGG16HRank(modelUtil.vgg_16_bn(ORIGIN_CP_RATE))
     hrank_obj.restore_disk()
-    workers_loader = get_data_loader(CIFAR10_NAME, data_type="train", batch_size=32,
+    train_loader = get_data_loader(CIFAR10_NAME, data_type="train", batch_size=32,
                                      shuffle=False, num_workers=4, pin_memory=True)
     test_loader = get_data_loader(CIFAR10_NAME, data_type="test", batch_size=32,
                                   shuffle=False, num_workers=4, pin_memory=True)
     GLOBAL_LOGGER.info('Train Loader------')
-    hrank_obj.wrapper.valid_performance(workers_loader)
+    hrank_obj.wrapper.valid_performance(train_loader)
     GLOBAL_LOGGER.info('Test Loader------')
     hrank_obj.wrapper.valid_performance(test_loader)
 
