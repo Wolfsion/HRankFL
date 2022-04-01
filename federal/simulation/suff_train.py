@@ -32,6 +32,8 @@ def union_convergence():
     workers_loaders = get_data_loader(CIFAR10_NAME, data_type="train",
                                       batch_size=32, shuffle=False,
                                       sampler=sampler, num_workers=4, pin_memory=True)
+    test_loader = get_data_loader(CIFAR10_NAME, data_type="test", batch_size=32,
+                                  shuffle=False, num_workers=4, pin_memory=True)
 
     hrank_objs = [VGG16HRank(modelUtil.vgg_16_bn(ORIGIN_CP_RATE)) for _ in range(num_slices)]
 
@@ -46,7 +48,9 @@ def union_convergence():
         for idx in range(num_slices):
             hrank_objs[idx].restore_mem(union_dict)
 
-    hrank_objs[0].wrapper.valid_performance(workers_loaders)
+        list_dict.clear()
+
+    hrank_objs[0].wrapper.valid_performance(test_loader)
     hrank_objs[0].interrupt_disk()
 
 

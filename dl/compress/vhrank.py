@@ -181,7 +181,7 @@ class VGG16HRank(HRank):
                 #     break
                 # union train config
                 if batch_idx >= union_train_limit:
-                    self.wrapper.valid_performance(loader)
+                    # self.wrapper.valid_performance(loader)
                     break
 
                 loss, cort = self.wrapper.step(inputs, targets, train=True)

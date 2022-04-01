@@ -44,9 +44,10 @@ def curt_time_stamp():
 class HRankPathGather(PathGather):
     vgg_pt = 'vgg_16_bn.pt'
 
-    def __init__(self, model: str, dataset: str, ranks: str) -> None:
+    def __init__(self, model: str, dataset: str, ranks: str, images: str) -> None:
         super().__init__(model, dataset)
         self.rpath = ranks
+        self.ipath = images
         self.rank_index = 0
 
     def model_dir(self):
@@ -82,3 +83,10 @@ class HRankPathGather(PathGather):
 
     def configs(self, name: str = 'chip'):
         return os.path.join(self.model_dir(), self.config_dir, name)
+
+    def img_dir(self):
+        assert checkout(self.ipath), self.ERROR_MESS1
+        return self.ipath
+
+    def img(self, name: str):
+        return os.path.join(self.img_dir(), name)

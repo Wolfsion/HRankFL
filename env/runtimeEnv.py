@@ -20,6 +20,7 @@ arch = "vgg16"
 datasets = 'res/datasets'
 ranks = 'res/milestone/ranks'
 vgg_model = 'res/checkpoint/vgg'
+images = 'res/images'
 
 # dataloader
 num_slices = 100
@@ -38,5 +39,5 @@ candidate_rate = [0.45]*7 + [0.78]*5
 ###
 
 # Path
-file_repo = HRankPathGather(vgg_model, datasets, ranks)
+file_repo = HRankPathGather(vgg_model, datasets, ranks, images)
 

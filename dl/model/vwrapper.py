@@ -130,9 +130,11 @@ class VWrapper:
             loss.backward()
             self.optim_step()
         test_loss += loss.item()
+
         _, predicted = pred.max(1)
         _, targets = labels.max(1)
         correct += predicted.eq(targets).sum().item()
+
         return test_loss, correct
 
     def zero_grad(self):
