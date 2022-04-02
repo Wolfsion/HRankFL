@@ -16,7 +16,7 @@ class VLogger():
 
     @property    
     def logger(self) -> logging.Logger:
-        log_format = '%(asctime)s | %(message)s'
+        log_format = '[%(levelname)s] - %(asctime)s | %(message)s'
         formatter = logging.Formatter(log_format, datefmt='%m/%d %I:%M:%S %p')
         file_handler = logging.FileHandler(self.file_path)
         file_handler.setFormatter(formatter)

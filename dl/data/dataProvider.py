@@ -31,14 +31,14 @@ class DataLoader(torch.utils.data.DataLoader):
         return len(self.dataset)
 
 
-def get_data(dataset: str, data_type, transform=None, target_transform=None, user_list=None):
-    if dataset == DataSetType.FEMNIST.name:
+def get_data(dataset: DataSetType, data_type, transform=None, target_transform=None, user_list=None):
+    if dataset == DataSetType.FEMNIST:
         pass
 
-    elif dataset == DataSetType.CelebA.name:
+    elif dataset == DataSetType.CelebA:
         pass
 
-    elif dataset == DataSetType.CIFAR10.name:
+    elif dataset == DataSetType.CIFAR10:
         assert data_type in ["train", "test"]
         if transform is None:
             mean = CIFAR10_MEAN
@@ -90,7 +90,7 @@ def get_data(dataset: str, data_type, transform=None, target_transform=None, use
         raise ValueError("{} dataset is not supported.".format(dataset))
 
 
-def get_data_loader(name: str, data_type, batch_size=None, shuffle: bool = False, sampler=None, transform=None,
+def get_data_loader(name: DataSetType, data_type: str, batch_size=None, shuffle: bool = False, sampler=None, transform=None,
                     target_transform=None, subset_indices=None, num_workers=8, pin_memory=False, user_list=None):
     assert data_type in ["train", "val", "test"]
     if data_type == "train":

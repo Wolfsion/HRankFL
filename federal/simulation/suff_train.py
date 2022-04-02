@@ -1,4 +1,4 @@
-from dl.compress.vhrank import VGG16HRank
+from dl.compress.vhrank import VGG16HRank, ResNet56HRank
 from dl.model import modelUtil
 from env.preEnv import *
 from dl.data import samplers
@@ -13,8 +13,8 @@ def init_datasets():
     get_data(DataSetType.ImageNet, data_type="train")
 
 
-def single_convergence():
-    loader = get_data_loader(CIFAR10_NAME, data_type="train",
+def vgg16_cifar10_single_convergence():
+    loader = get_data_loader(DataSetType.CIFAR10, data_type="train",
                              batch_size=32, shuffle=True,
                              num_workers=0, pin_memory=True)
     GLOBAL_LOGGER.info("Sampler initialized")
@@ -29,6 +29,21 @@ def single_convergence():
 
     hrank_obj.interrupt_disk('single.snap')
 
+def resnet56_cifar100_single_convergence():
+    loader = get_data_loader(DataSetType.CIFAR100, data_type="train",
+                             batch_size=32, shuffle=True,
+                             num_workers=0, pin_memory=True)
+    GLOBAL_LOGGER.info("Sampler initialized")
+    hrank_obj = ResNet56HRank(modelUtil.resnet_56(ORIGIN_CP_RATE))
+    for i in range(1000):
+        hrank_obj.learn_run(loader)
+
+    test_loader = get_data_loader(DataSetType.CIFAR100, data_type="test", batch_size=32,
+                                  shuffle=True, num_workers=0, pin_memory=True)
+
+    GLOBAL_LOGGER.info('Test Loader------')
+    hrank_obj.wrapper.valid_performance(test_loader)
+    hrank_obj.interrupt_disk('single.snap')
 
 def union_convergence():
     list_dict = []
