@@ -49,19 +49,20 @@ def traverse_module(module, criterion, layers: list, names: list, prefix="", lea
     else:
         raise NotImplementedError("Supports only leaf modules")
 
-
+# for cifar10
 def vgg_16_bn(compress_rate):
     return VGG(compress_rate=compress_rate)
 
 
+# for cifar100
 def resnet_56(compress_rate):
-    return ResNet(BasicBlock, 56, compress_rate=compress_rate)
+    return ResNet(BasicBlock, 56, compress_rate=compress_rate, num_classes=100)
 
-
+# for cifar10
 def resnet_110(compress_rate):
     return ResNet(BasicBlock, 110, compress_rate=compress_rate)
 
-
+# for cifar100
 def mobilenet_v2(compress_rate):
     return MobileNetV2(compress_rate=compress_rate, width_mult=1)
 
