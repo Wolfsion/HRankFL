@@ -102,7 +102,7 @@ class VWrapper:
 
     def use_default_optim(self):
         # self.optimizer = SGD(self.model.parameters(), lr=INIT_LR)
-        self.optimizer = optim.SGD(self.model.parameters(), lr=0.01, momentum=0.9, weight_decay=1e-5)
+        self.optimizer = optim.SGD(self.model.parameters(), lr=0.01, momentum=0.9, weight_decay=1e-2)
         self.lr_scheduler = lr_scheduler.StepLR(self.optimizer, step_size=1,
                                                 gamma=0.5 ** (1 / LR_HALF_LIFE))
 

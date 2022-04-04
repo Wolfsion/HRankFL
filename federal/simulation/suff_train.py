@@ -35,7 +35,7 @@ def resnet56_cifar100_single_convergence():
                              num_workers=0, pin_memory=True)
     GLOBAL_LOGGER.info("Sampler initialized")
     hrank_obj = ResNet56HRank(modelUtil.resnet_56(ORIGIN_CP_RATE))
-    for i in range(100):
+    for i in range(50):
         hrank_obj.learn_run(loader)
 
     test_loader = get_data_loader(DataSetType.CIFAR100, data_type="test", batch_size=32,
@@ -91,4 +91,5 @@ def test_checkpoint():
 
 
 def main():
-    union_convergence()
+    vgg16_cifar10_single_convergence()
+    # union_convergence()
