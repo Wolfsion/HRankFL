@@ -67,16 +67,16 @@ class HRank(ABC):
                 self.all_batch += 1
                 inputs, targets = next(iter(loader))
 
-                # single train config
-                if batch_idx >= train_limit:
-                    self.valid_performance(loader)
-                    self.interrupt_disk()
-                    break
-
-                # # union train config
-                # if batch_idx >= union_train_limit:
-                #     # self.wrapper.valid_performance(loader)
+                # # single train config
+                # if batch_idx >= train_limit:
+                #     self.valid_performance(loader)
+                #     self.interrupt_disk()
                 #     break
+
+                # union train config
+                if batch_idx >= union_train_limit:
+                    # self.wrapper.valid_performance(loader)
+                    break
 
                 loss, cort = self.wrapper.step(inputs, targets, train=True)
                 test_loss += loss

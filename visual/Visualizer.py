@@ -1,9 +1,12 @@
+import pandas as pd
 from matplotlib import pyplot as plt
 import seaborn as sns
 import numpy as np
 
 from visual.DataExtractor import Extractor
 from env.runtimeEnv import *
+
+from visual.DataExtractor import get_ori_dict
 
 # axis mode:
 '''
@@ -28,27 +31,52 @@ class VisBoard:
 
     def __init__(self, data_resource: Extractor):
         self.io = data_resource
+        sns.set_style('darkgrid')
 
-    def map_int(self, form: str) -> int:
+    def map_int(self, form: str) -> tuple:
         assert len(form) < 4, self.ERROR_MESS1
         assert all([ch in self.map_dict.keys() for ch in form]), self.ERROR_MESS2
         ret = 0
         for ch in form:
             ret += self.map_dict[ch]
-        return ret
+        hist_flag = False if ret < 4 else True
+        kde_flag = False if ret//2 % 2 == 0 else True
+        rug_flag = False if ret % 2 == 0 else True
+        return hist_flag, kde_flag, rug_flag
+
+    def text_info(self):
+        plt.title('Reg')
+        plt.xlabel('acc')
+        plt.ylabel('rate')
 
     def single_var_dist(self, axis: str, form: str):
         mode = self.map_int(form)
-        data_list = self.io.map_vars(axis)
-        x = [1, 2, 3, 4]
-        sns.displot(x)
+        df = self.io.map_vars(axis)
+        if mode[0]:
+            sns.displot(df, x="acc", kde=mode[1], rug=mode[2], hue="class")
+        else:
+            sns.displot(df, x="acc", kind="kde", hue="class")
         plt.savefig(file_repo.img("test"))
 
     def double_vars_dist(self, axis: str, form: str):
         mode = self.map_int(form)
 
+        df = self.io.map_vars(axis)
+
+        sns.jointplot(data=df, x='acc', y='rate', hue="class")
+
+        plt.savefig(file_repo.img("test"))
+
     def double_vars_regression(self, axis: str, form: str):
         mode = self.map_int(form)
 
+        df = self.io.map_vars(axis)
+
+        sns.regplot(data=df, x='acc', y='rate')
+        self.text_info()
+        plt.savefig(file_repo.img("test"))
+
     def multi_vars_regression(self, axis: str, form: str):
         mode = self.map_int(form)
+
+        sns.lmplot()

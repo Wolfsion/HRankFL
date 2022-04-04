@@ -90,4 +90,4 @@ def test_checkpoint():
 
 
 def main():
-    resnet56_cifar100_single_convergence()
+    union_convergence()
