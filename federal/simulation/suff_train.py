@@ -19,10 +19,10 @@ def vgg16_cifar10_single_convergence():
                              num_workers=0, pin_memory=True)
     GLOBAL_LOGGER.info("Sampler initialized")
     hrank_obj = VGG16HRank(modelUtil.vgg_16_bn(ORIGIN_CP_RATE))
-    for i in range(1000):
+    for i in range(500):
         hrank_obj.learn_run(loader)
 
-    test_loader = get_data_loader(CIFAR10_NAME, data_type="test", batch_size=32,
+    test_loader = get_data_loader(DataSetType.CIFAR10, data_type="test", batch_size=32,
                                   shuffle=True, num_workers=0, pin_memory=True)
     GLOBAL_LOGGER.info('Test Loader------')
     hrank_obj.wrapper.valid_performance(test_loader)
