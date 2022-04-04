@@ -50,12 +50,13 @@ def union_convergence():
     union_dict = dict()
     fedavg = FedAvg()
     sampler = samplers.CF10NIIDSampler(num_slices, 100, data_per_client_epoch, True, client_per_round)
-    workers_loaders = get_data_loader(CIFAR10_NAME, data_type="train",
-                                      batch_size=32, shuffle=True,
+    workers_loaders = get_data_loader(DataSetType.CIFAR10, data_type="train",
+                                      batch_size=32, shuffle=False,
                                       sampler=sampler, num_workers=0, pin_memory=True)
     hrank_objs = [VGG16HRank(modelUtil.vgg_16_bn(ORIGIN_CP_RATE)) for _ in range(num_slices)]
 
-    for rnd in range(100):
+    for rnd in range(20):
+        GLOBAL_LOGGER.info(f"FL turn:{rnd}...")
         curt_selected = sampler.curt_selected()
         for idx in curt_selected[rnd]:
             GLOBAL_LOGGER.info(f"Train from device:{idx}")
@@ -69,7 +70,7 @@ def union_convergence():
 
         list_dict.clear()
 
-    test_loader = get_data_loader(CIFAR10_NAME, data_type="test", batch_size=32,
+    test_loader = get_data_loader(DataSetType.CIFAR10, data_type="test", batch_size=32,
                                   shuffle=True, num_workers=0, pin_memory=True)
     GLOBAL_LOGGER.info('Test Loader------')
     hrank_objs[0].wrapper.valid_performance(test_loader)
