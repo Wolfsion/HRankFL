@@ -47,11 +47,9 @@ class CF10NormSamplerPool:
 class LSampler(Sampler, ABC):
     ERROR_MESS1 = "The dataset is not supported."
 
-    def __init__(self, datatype, num_slices, num_round, data_per_client,
+    def __init__(self, datatype: DataSetType, num_slices, num_round, data_per_client,
                  client_selection, client_per_round=None):
         self.indices = []
-        assert datatype > DataSetType.LOWWER.value, self.ERROR_MESS1
-        assert datatype < DataSetType.UPPER.value, self.ERROR_MESS1
         self.getIndices(datatype, num_slices, num_round, data_per_client,
                         client_selection, client_per_round)
 
@@ -109,16 +107,16 @@ class IIDSampler(LSampler):
 class CF10NIIDSampler(LSampler):
     ERROR_MESS1 = "The idx_selected is null."
 
-    def __init__(self, num_slices, num_round, data_per_client,
-                 client_selection: bool, client_per_round=None, seed=1, datatype=1):
+    def __init__(self, num_slices, num_round, data_per_client, client_selection: bool,
+                 client_per_round=None, seed=1, datatype=DataSetType.CIFAR10):
         self.seed = seed
         self.idx_selected = []
         super().__init__(datatype, num_slices, num_round, data_per_client,
                          client_selection, client_per_round)
 
     def getIndices(self, datatype, num_slices, num_round, data_per_client, client_selection, client_per_round):
-        assert datatype == DataSetType.CIFAR10.value, "must be CIFAR10"
-        cifar10 = get_data(DataSetType.CIFAR10.name, data_type="train")
+        assert datatype == DataSetType.CIFAR10, "must be CIFAR10"
+        cifar10 = get_data(DataSetType.CIFAR10, data_type="train")
         hetero_dir_part = CIFAR10Partitioner(cifar10.targets, num_slices,
                                              balance=None, partition="dirichlet",
                                              dir_alpha=0.3, seed=self.seed)
