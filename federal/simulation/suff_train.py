@@ -6,7 +6,7 @@ from dl.data.dataProvider import get_data_loader
 from dl.data.dataProvider import get_data
 from env.runtimeEnv import *
 from federal.merge.FedAvg import FedAvg
-
+from dl.compress.HyperProvider import IntervalProvider
 
 def init_datasets():
     get_data(DataSetType.CIFAR100, data_type="train")
@@ -14,20 +14,27 @@ def init_datasets():
 
 
 def vgg16_cifar10_single_convergence():
+    list_ranks = []
+    interval = IntervalProvider()
     loader = get_data_loader(DataSetType.CIFAR10, data_type="train",
                              batch_size=32, shuffle=True,
                              num_workers=0, pin_memory=True)
+    test_loader = get_data_loader(DataSetType.CIFAR10, data_type="test", batch_size=32,
+                                  shuffle=True, num_workers=0, pin_memory=True)
+
     GLOBAL_LOGGER.info("Sampler initialized")
+
     hrank_obj = VGG16HRank(modelUtil.vgg_16_bn(ORIGIN_CP_RATE))
     for i in range(500):
         hrank_obj.learn_run(loader)
+        hrank_obj.get_rank(loader)
+        interval.push_simp_container(hrank_obj.rank_dict)
+        GLOBAL_LOGGER.info(f"Batch:{i},Pruning is proper?:{interval.is_timing_simple(list_ranks)}")
 
-    test_loader = get_data_loader(DataSetType.CIFAR10, data_type="test", batch_size=32,
-                                  shuffle=True, num_workers=0, pin_memory=True)
     GLOBAL_LOGGER.info('Test Loader------')
     hrank_obj.wrapper.valid_performance(test_loader)
-
     hrank_obj.interrupt_disk('single.snap')
+
 
 def resnet56_cifar100_single_convergence():
     loader = get_data_loader(DataSetType.CIFAR100, data_type="train",
@@ -45,14 +52,20 @@ def resnet56_cifar100_single_convergence():
     hrank_obj.wrapper.valid_performance(test_loader)
     hrank_obj.interrupt_disk('single.snap')
 
+
 def union_convergence():
     list_dict = []
+    list_ranks = []
     union_dict = dict()
     fedavg = FedAvg()
     sampler = samplers.CF10NIIDSampler(num_slices, 100, data_per_client_epoch, True, client_per_round)
+
     workers_loaders = get_data_loader(DataSetType.CIFAR10, data_type="train",
                                       batch_size=32, shuffle=False,
                                       sampler=sampler, num_workers=0, pin_memory=True)
+    test_loader = get_data_loader(DataSetType.CIFAR10, data_type="test", batch_size=32,
+                                  shuffle=True, num_workers=0, pin_memory=True)
+
     hrank_objs = [VGG16HRank(modelUtil.vgg_16_bn(ORIGIN_CP_RATE)) for _ in range(num_slices)]
 
     for rnd in range(20):
@@ -68,10 +81,11 @@ def union_convergence():
         for idx in range(num_slices):
             hrank_objs[idx].restore_mem(union_dict)
 
+        hrank_objs[0].get_rank(test_loader)
+        list_ranks.append(hrank_objs[0].rank_dict)
+
         list_dict.clear()
 
-    test_loader = get_data_loader(DataSetType.CIFAR10, data_type="test", batch_size=32,
-                                  shuffle=True, num_workers=0, pin_memory=True)
     GLOBAL_LOGGER.info('Test Loader------')
     hrank_objs[0].wrapper.valid_performance(test_loader)
     hrank_objs[0].interrupt_disk('union.snap')
