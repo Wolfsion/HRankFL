@@ -14,6 +14,7 @@ class PathGather(ABC):
         self.mpath: str = model
         self.dpath: str = dataset
         self.config_dir = 'configs'
+        self.visual_dir = 'visual'
 
     @abstractmethod
     def model_dir(self):
@@ -90,3 +91,6 @@ class HRankPathGather(PathGather):
 
     def img(self, name: str):
         return os.path.join(self.img_dir(), name)
+
+    def visual(self, name: str):
+        return os.path.join(self.model_dir(), self.config_dir, name)

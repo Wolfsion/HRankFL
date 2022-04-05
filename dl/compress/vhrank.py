@@ -180,11 +180,13 @@ class VGG16HRank(HRank):
         super().__init__(model_type, model)
 
         self.relu_cfg = self.wrapper.device.access_model().relucfg
+        self.cov_order = 0
 
     def get_rank(self, loader: tdata.DataLoader):
         for cov_id in self.relu_cfg:
             cov_layer = self.wrapper.device.access_model().features[cov_id]
-            self.drive_hook(cov_layer, loader, cov_id)
+            self.drive_hook(cov_layer, loader, self.cov_order)
+            self.cov_order += 1
         file_repo.reset_rank_index()
 
     def get_rank_plus(self):

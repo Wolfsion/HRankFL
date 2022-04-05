@@ -33,10 +33,11 @@ def vgg16_cifar10_single_convergence():
             hrank_obj.get_rank(loader)
             interval.push_simp_container(hrank_obj.rank_dict)
             rank_flag = True
+            continue
         if rank_flag:
             hrank_obj.get_rank(loader)
             interval.push_simp_container(hrank_obj.rank_dict)
-            GLOBAL_LOGGER.info(f"Epoch:{i},Pruning is proper?:{interval.is_timing_simple(list_ranks)}")
+            GLOBAL_LOGGER.info(f"Epoch:{i},Pruning is proper?:{interval.is_timing_simple()}")
             rank_flag = False
 
     GLOBAL_LOGGER.info('Test Loader------')

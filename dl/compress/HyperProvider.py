@@ -37,7 +37,9 @@ class IntervalProvider:
         else:
             return True
 
-    def is_timing_simple(self, ranks_dict: list):
+    def is_timing_simple(self, ranks_dict: list = None):
+        if ranks_dict is None:
+            ranks_dict = self.cont_list
         assert len(ranks_dict) == self.SIMP_LEN, self.ERROR_MESS1
         return self.is_timing(ranks_dict, self.SIMP_LEN)
 
