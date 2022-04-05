@@ -1,40 +1,23 @@
 from abc import ABC, abstractmethod
 import os
 import time
+import pickle
+from env.preEnv import DataSetType
 
+
+# 待实现优化
+# 将milestone内容迁移到checkpoint对应模型下
+# checkout 当目录不存在时创建
+# 对象的序列化与反序列化实现
 
 def checkout(path: str):
-    return os.path.isdir(path)
+    if not os.path.isdir(path):
+        os.makedirs(dir)
 
 
-class PathGather(ABC):
-    ERROR_MESS1 = "Given directory doesn't exists."
-
-    def __init__(self, model, dataset) -> None:
-        self.mpath: str = model
-        self.dpath: str = dataset
-        self.config_dir = 'configs'
-        self.visual_dir = 'visual'
-
-    @abstractmethod
-    def model_dir(self):
-        pass
-
-    @abstractmethod
-    def model_name(self):
-        pass
-
-    @abstractmethod
-    def model(self):
-        pass
-
-    @abstractmethod
-    def dataset_dir(self):
-        pass
-
-    @abstractmethod
-    def configs(self):
-        pass
+def store(path: str, _obj):
+    with open(path, "wb") as f:
+        pickle.dump(_obj, f)
 
 
 def curt_time_stamp():
@@ -42,55 +25,72 @@ def curt_time_stamp():
     return time.strftime(pattern, time.localtime(time.time()))
 
 
+class PathGather(ABC):
+    ERROR_MESS1 = "Given directory doesn't exists."
+
+    def __init__(self, model, dataset, image) -> None:
+        self.mpath: str = model
+        self.dpath: str = dataset
+        self.ipath: str = image
+
+    @abstractmethod
+    def model(self):
+        pass
+
+    @abstractmethod
+    def dataset(self, d_type: DataSetType):
+        pass
+
+    @abstractmethod
+    def configs(self):
+        pass
+
+
 class HRankPathGather(PathGather):
     vgg_pt = 'vgg_16_bn.pt'
 
-    def __init__(self, model: str, dataset: str, ranks: str, images: str) -> None:
-        super().__init__(model, dataset)
-        self.rpath = ranks
-        self.ipath = images
+    def __init__(self, model: str, dataset: str, images: str) -> None:
+        super().__init__(model, dataset, images)
         self.rank_index = 0
 
-    def model_dir(self):
-        assert checkout(self.mpath), self.ERROR_MESS1
-        return self.mpath
+        self.rank_dir = 'ranks'
+        self.config_dir = 'configs'
+        self.visual_dir = 'visual'
 
-    def model_name(self):
-        return curt_time_stamp() + '.pt'
-
+    # Outer API
     def model(self, fixed=False):
         if fixed:
-            return os.path.join(self.model_dir(), self.vgg_pt)
+            return os.path.join(self.mpath, self.vgg_pt)
         else:
-            return os.path.join(self.model_dir(), self.model_name())
+            model_name = curt_time_stamp() + '.pt'
+            return os.path.join(self.mpath, model_name)
 
-    def dataset_dir(self):
-        assert checkout(self.dpath), self.ERROR_MESS1
-        return self.dpath
-
-    def rank_dir(self):
-        assert checkout(self.rpath), self.ERROR_MESS1
-        return self.rpath
-
-    def rank_name(self):
-        self.rank_index += 1
-        return str(self.rank_index) + '.npy'
+    def dataset(self, d_type: DataSetType):
+        if d_type == DataSetType.CIFAR10:
+            return os.path.join(self.dpath, "CIFAR10")
+        else:
+            return "null"
 
     def rank(self):
-        return os.path.join(self.rank_dir(), self.rank_name())
+        self.rank_index += 1
+        rank_name = str(self.rank_index) + '.npy'
+        return os.path.join(self.mpath, self.rank_dir, rank_name)
 
     def reset_rank_index(self):
         self.rank_index = 0
 
     def configs(self, name: str = 'chip'):
-        return os.path.join(self.model_dir(), self.config_dir, name)
-
-    def img_dir(self):
-        assert checkout(self.ipath), self.ERROR_MESS1
-        return self.ipath
+        return os.path.join(self.mpath, self.config_dir, name)
 
     def img(self, name: str):
-        return os.path.join(self.img_dir(), name)
+        return os.path.join(self.ipath, name)
 
     def visual(self, name: str):
-        return os.path.join(self.model_dir(), self.config_dir, name)
+        return os.path.join(self.visual_dir, name)
+
+
+
+
+
+
+

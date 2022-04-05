@@ -188,6 +188,7 @@ class VGG16HRank(HRank):
             self.drive_hook(cov_layer, loader, self.cov_order)
             self.cov_order += 1
         file_repo.reset_rank_index()
+        self.cov_order = 0
 
     def get_rank_plus(self):
         pass

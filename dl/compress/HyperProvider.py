@@ -20,7 +20,7 @@ class IntervalProvider:
         clients_ranks = [[] for _ in range(num_conv_layers)]
         for i in range(num_clients):
             for j in range(num_conv_layers):
-                clients_ranks[i].append(clients_ranks_dict[i][j])
+                clients_ranks[j].append(clients_ranks_dict[i][j])
 
         sum_distance = 0
         for j in range(num_conv_layers):

@@ -7,6 +7,7 @@ from dl.data.dataProvider import get_data
 from env.runtimeEnv import *
 from federal.merge.FedAvg import FedAvg
 from dl.compress.HyperProvider import IntervalProvider
+from copy import deepcopy
 
 def init_datasets():
     get_data(DataSetType.CIFAR100, data_type="train")
@@ -31,12 +32,12 @@ def vgg16_cifar10_single_convergence():
         hrank_obj.learn_run(loader)
         if i % 50 == 0:
             hrank_obj.get_rank(loader)
-            interval.push_simp_container(hrank_obj.rank_dict)
+            interval.push_simp_container(deepcopy(hrank_obj.rank_dict))
             rank_flag = True
             continue
         if rank_flag:
             hrank_obj.get_rank(loader)
-            interval.push_simp_container(hrank_obj.rank_dict)
+            interval.push_simp_container(deepcopy(hrank_obj.rank_dict))
             GLOBAL_LOGGER.info(f"Epoch:{i},Pruning is proper?:{interval.is_timing_simple()}")
             rank_flag = False
 
