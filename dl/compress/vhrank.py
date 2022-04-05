@@ -133,7 +133,7 @@ class HRank(ABC):
                 correct += cort
                 total += targets.size(0)
 
-                GLOBAL_LOGGER.info('batch_idx:%d | Loss: %.3f | Acc: %.3f%% (%d/%d)'
+                GLOBAL_LOGGER.info('Test batch_idx:%d | Loss: %.3f | Acc: %.3f%% (%d/%d)'
                                    % (batch_idx, test_loss / (batch_idx + 1), 100. * correct / total, correct, total))
 
     def interrupt_disk(self, name: str = None):

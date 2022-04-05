@@ -24,12 +24,20 @@ def vgg16_cifar10_single_convergence():
 
     GLOBAL_LOGGER.info("Sampler initialized")
 
+    rank_flag = False
     hrank_obj = VGG16HRank(modelUtil.vgg_16_bn(ORIGIN_CP_RATE))
     for i in range(500):
+        GLOBAL_LOGGER.info(f"Epoch{i} Train...")
         hrank_obj.learn_run(loader)
-        hrank_obj.get_rank(loader)
-        interval.push_simp_container(hrank_obj.rank_dict)
-        GLOBAL_LOGGER.info(f"Batch:{i},Pruning is proper?:{interval.is_timing_simple(list_ranks)}")
+        if i % 50 == 0:
+            hrank_obj.get_rank(loader)
+            interval.push_simp_container(hrank_obj.rank_dict)
+            rank_flag = True
+        if rank_flag:
+            hrank_obj.get_rank(loader)
+            interval.push_simp_container(hrank_obj.rank_dict)
+            GLOBAL_LOGGER.info(f"Epoch:{i},Pruning is proper?:{interval.is_timing_simple(list_ranks)}")
+            rank_flag = False
 
     GLOBAL_LOGGER.info('Test Loader------')
     hrank_obj.wrapper.valid_performance(test_loader)
