@@ -31,7 +31,7 @@ class IntervalProvider:
                         return False
                     sum_distance += cos_distance[row][col]
 
-        GLOBAL_LOGGER.info(f"Sum distance:{sum_distance}")
+        GLOBAL_LOGGER.info(f"#Interval:{sum_distance}#")
         if sum_distance > combine_num * num_conv_layers * self.sum_limit:
             return False
         else:

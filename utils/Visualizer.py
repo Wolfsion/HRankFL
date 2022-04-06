@@ -1,12 +1,8 @@
-import pandas as pd
 from matplotlib import pyplot as plt
 import seaborn as sns
-import numpy as np
 
-from visual.DataExtractor import Extractor
+from utils.DataExtractor import Extractor
 from env.runtimeEnv import *
-
-from visual.DataExtractor import get_ori_dict
 
 # axis mode:
 '''
@@ -28,6 +24,7 @@ class VisBoard:
     ERROR_MESS1 = "The form length cannot exceed 3 characters."
     ERROR_MESS2 = "The mode str contains not defined character."
     map_dict = {"h": 4, "k": 2, "r": 1}
+    KEYS = ['F', 'A', 'I', 'R']
 
     def __init__(self, data_resource: Extractor):
         self.io = data_resource

@@ -8,6 +8,11 @@ from env.runtimeEnv import *
 from federal.merge.FedAvg import FedAvg
 from dl.compress.HyperProvider import IntervalProvider
 from copy import deepcopy
+from utils.Visualizer import VisBoard
+
+def vis_log():
+    vis = VisBoard()
+    vis.single_var_dist('I', 'k')
 
 def init_datasets():
     get_data(DataSetType.CIFAR100, data_type="train")
@@ -27,19 +32,20 @@ def vgg16_cifar10_single_convergence():
 
     rank_flag = False
     hrank_obj = VGG16HRank(modelUtil.vgg_16_bn(ORIGIN_CP_RATE))
-    for i in range(500):
+    for i in range(1000):
         GLOBAL_LOGGER.info(f"Epoch{i} Train...")
         hrank_obj.learn_run(loader)
-        if i % 50 == 0:
-            hrank_obj.get_rank(loader)
-            interval.push_simp_container(deepcopy(hrank_obj.rank_dict))
-            rank_flag = True
-            continue
-        if rank_flag:
-            hrank_obj.get_rank(loader)
-            interval.push_simp_container(deepcopy(hrank_obj.rank_dict))
-            GLOBAL_LOGGER.info(f"Epoch:{i},Pruning is proper?:{interval.is_timing_simple()}")
-            rank_flag = False
+        if i > 500:
+            if i % 100 == 0:
+                hrank_obj.get_rank(loader)
+                interval.push_simp_container(deepcopy(hrank_obj.rank_dict))
+                rank_flag = True
+                continue
+            if rank_flag:
+                hrank_obj.get_rank(loader)
+                interval.push_simp_container(deepcopy(hrank_obj.rank_dict))
+                GLOBAL_LOGGER.info(f"Epoch:{i},Pruning is proper?:{interval.is_timing_simple()}")
+                rank_flag = False
 
     GLOBAL_LOGGER.info('Test Loader------')
     hrank_obj.wrapper.valid_performance(test_loader)
@@ -117,3 +123,4 @@ def test_checkpoint():
 def main():
     vgg16_cifar10_single_convergence()
     # union_convergence()
+    vis_log()

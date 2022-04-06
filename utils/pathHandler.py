@@ -12,7 +12,7 @@ from env.preEnv import DataSetType
 
 def checkout(path: str):
     if not os.path.isdir(path):
-        os.makedirs(dir)
+        os.makedirs(path)
 
 
 def store(path: str, _obj):
@@ -86,7 +86,9 @@ class HRankPathGather(PathGather):
         return os.path.join(self.ipath, name)
 
     def visual(self, name: str):
-        return os.path.join(self.visual_dir, name)
+        visual_data_path = os.path.join(self.mpath, self.visual_dir)
+        checkout(visual_data_path)
+        return os.path.join(visual_data_path, name)
 
 
 

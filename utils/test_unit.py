@@ -1,7 +1,7 @@
 from random import random
 
-from visual.DataExtractor import Extractor
-from visual.Visualizer import VisBoard
+from utils.DataExtractor import Extractor
+from utils.Visualizer import VisBoard
 
 
 def random_list(length=100):
