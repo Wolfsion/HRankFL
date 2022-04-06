@@ -24,7 +24,7 @@ def init_dataloader():
     loader = get_data_loader(DataSetType.CIFAR10, data_type="train",
                              batch_size=32, shuffle=True,
                              num_workers=0, pin_memory=True)
-    inputs, label = next(loader)
+    inputs, label = next(iter(loader))
     print(inputs)
     print(label)
 
@@ -93,7 +93,7 @@ def union_convergence():
 
     hrank_objs = [VGG16HRank(modelUtil.vgg_16_bn(ORIGIN_CP_RATE)) for _ in range(num_slices)]
 
-    for rnd in range(20):
+    for rnd in range(100):
         GLOBAL_LOGGER.info(f"FL turn:{rnd}...")
         curt_selected = sampler.curt_selected()
         for idx in curt_selected[rnd]:
@@ -132,6 +132,6 @@ def test_checkpoint():
 
 def main():
     # vgg16_cifar10_single_convergence()
-    # # union_convergence()
+    union_convergence()
     # vis_log()
-    init_dataloader()
+    # init_dataloader()
