@@ -80,10 +80,11 @@ def is_conv(layer):
 
 
 class RateProvider:
-    def __init__(self, wrapper: VWrapper, analyzer: Analyzer):
+    def __init__(self, wrapper: VWrapper, analyzer: Analyzer, clients: int = 100):
         self.wrapper = wrapper
         self.analyzer = analyzer
         self.global_prune_rate = 0
+        self.clients = clients
         self.rates = self.analyzer.total_rates()
 
     def get_rate_for_each_layers(self):
@@ -102,6 +103,9 @@ class RateProvider:
         number_of_weights_to_prune = int(np.ceil(self.global_prune_rate * weight_flat.shape[0]))
         threshold = np.sort(np.abs(weight_flat))[number_of_weights_to_prune]
         compress_rate = []
+
+        # model: self.wrapper.model.prunable_layers
+        # layer(DenseLayer):
         for i, layer in enumerate(self.wrapper.model.prunable_layers):
             if is_conv(layer):
                 a = np.abs(layer.weight.data.clone().cpu().detach().numpy()) < threshold
@@ -111,23 +115,19 @@ class RateProvider:
 
         return compress_rate
 
-    def get_ratio(self, idxs, device="cpu"):
+    def get_ratio(self, idxs):
         """
         根据特征值的概率密度，获取剪枝率
         :param idxs:
-        :param device:
         :return:
         """
         print("=== 获取剪枝率 ===")
-        self.model.eval()
-        train_loader = DataLoader(DatasetSplit(self.analyzer.train_dataset, idxs), batch_size=100, shuffle=True)
-        for data in train_loader:
-            inputs, targets = data
-            break
-
-        inputs = inputs.to(device)
-        targets = targets.to(device)
-        hessian_comp = hessian(self.model, self.model.loss_func, data=(inputs, targets), cuda=True if device != "cpu" else False)
+        self.wrapper.model.eval()
+        train_loader = DataLoader(DatasetSplit(self.analyzer.train_dataset, idxs), batch_size=128, shuffle=True)
+        inputs, targets = next(iter(train_loader))
+        inputs, labels = self.wrapper.device.on_tensor(inputs, targets)
+        hessian_comp = hessian(self.wrapper.model, self.wrapper.loss_func,
+                               data=(inputs, targets), cuda=self.wrapper.device.last_choice)
         density_eigen, density_weight = hessian_comp.density(iter=50, n_v=1)
         inc = 0.1
         while True:
@@ -154,16 +154,15 @@ class RateProvider:
         # 根据信息获得合适的剪枝率——auto
         ratios = []
 
-        for i in range(100 + 1):
-            ret = self.get_ratio()
+        for i in range(self.clients):
+            ret = self.get_ratio(self.analyzer.user_groups[i])
             ratios.append(ret)
 
         # by la why multiply two rates
-        for i in range(100 + 1):
+        for i in range(self.clients):
             self.global_prune_rate += self.rates[i] * ratios[i]
         return self.global_prune_rate
 
     def layer_rate(self):
         compress_rate = self.get_rate_for_each_layers()
         return compress_rate
-

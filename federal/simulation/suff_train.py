@@ -41,7 +41,7 @@ def vgg16_cifar10_single_convergence():
 
     rank_flag = False
     hrank_obj = VGG16HRank(modelUtil.vgg_16_bn(ORIGIN_CP_RATE))
-    for i in range(1000):
+    for i in range(2000):
         GLOBAL_LOGGER.info(f"Epoch{i} Train...")
         hrank_obj.learn_run(loader)
         if i > 500:

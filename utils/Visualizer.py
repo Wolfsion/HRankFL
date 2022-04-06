@@ -49,10 +49,11 @@ class VisBoard:
     def single_var_dist(self, axis: str, form: str):
         mode = self.map_int(form)
         df = self.io.map_vars(axis)
+        indices = self.io.map_list(axis)
         if mode[0]:
-            sns.displot(df, x="acc", kde=mode[1], rug=mode[2], hue="class")
+            sns.displot(df, x=self.KEYS[indices[0]], kde=mode[1], rug=mode[2], hue="class")
         else:
-            sns.displot(df, x="acc", kind="kde", hue="class")
+            sns.displot(df, x=self.KEYS[indices[0]], kind="kde", hue="class")
         plt.savefig(file_repo.img("test"))
 
     def double_vars_dist(self, axis: str, form: str):
