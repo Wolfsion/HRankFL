@@ -1,6 +1,13 @@
+import torch
+import torch.nn
+import numpy as np
+from pyhessian import hessian
 from sklearn.metrics.pairwise import pairwise_distances
 from scipy.special import comb
 from env.preEnv import GLOBAL_LOGGER
+from dl.compress.StatAnalyzer import Analyzer, _get_ratio
+from torch.utils.data import DataLoader, Dataset
+from dl.model.vwrapper import VWrapper
 
 
 class IntervalProvider:
@@ -50,6 +57,113 @@ class IntervalProvider:
             self.cont_list[0] = self.cont_list[1]
             self.cont_list[1] = ranks
 
+
+class DatasetSplit(Dataset):
+    """An abstract Dataset class wrapped around Pytorch Dataset class.
+    """
+    def __init__(self, dataset, idxs):
+        self.dataset = dataset
+        self.idxs = [int(i) for i in idxs]
+
+    def __len__(self):
+        return len(self.idxs)
+
+    def __getitem__(self, item):
+        image, label = self.dataset[self.idxs[item]]
+        return torch.tensor(image), torch.tensor(label)
+
+
+
+def is_conv(layer):
+    # DenseConv2d代替torch.nn.Conv2d
+    return isinstance(layer, torch.nn.Conv2d)
+
+
 class RateProvider:
-    def __init__(self):
-        pass
+    def __init__(self, wrapper: VWrapper, analyzer: Analyzer):
+        self.wrapper = wrapper
+        self.analyzer = analyzer
+        self.global_prune_rate = 0
+        self.rates = self.analyzer.total_rates()
+
+    def get_rate_for_each_layers(self):
+        """
+        根据模型权重的范式以及全局剪枝率，为每一层卷积层确定剪枝率
+        :param model:
+        :param global_prune_rate:
+        :return:
+        """
+        weights = {k: v.clone().cpu().detach().numpy()
+                   for k, v in self.wrapper.model.named_parameters()
+                   if v.requires_grad}
+        # flat the weights
+        weight_flat = np.concatenate([v.flatten() for k, v in weights.items()])
+        # get the thredsheld
+        number_of_weights_to_prune = int(np.ceil(self.global_prune_rate * weight_flat.shape[0]))
+        threshold = np.sort(np.abs(weight_flat))[number_of_weights_to_prune]
+        compress_rate = []
+        for i, layer in enumerate(self.wrapper.model.prunable_layers):
+            if is_conv(layer):
+                a = np.abs(layer.weight.data.clone().cpu().detach().numpy()) < threshold
+                b = int(a.sum())
+                c = layer.weight.data.numel()
+                compress_rate.append(round(b / c, 4))
+
+        return compress_rate
+
+    def get_ratio(self, idxs, device="cpu"):
+        """
+        根据特征值的概率密度，获取剪枝率
+        :param idxs:
+        :param device:
+        :return:
+        """
+        print("=== 获取剪枝率 ===")
+        self.model.eval()
+        train_loader = DataLoader(DatasetSplit(self.analyzer.train_dataset, idxs), batch_size=100, shuffle=True)
+        for data in train_loader:
+            inputs, targets = data
+            break
+
+        inputs = inputs.to(device)
+        targets = targets.to(device)
+        hessian_comp = hessian(self.model, self.model.loss_func, data=(inputs, targets), cuda=True if device != "cpu" else False)
+        density_eigen, density_weight = hessian_comp.density(iter=50, n_v=1)
+        inc = 0.1
+        while True:
+            t = 0.000
+            ratios = []
+            flag = False
+            while True:
+                ratio = _get_ratio(t, density_eigen=density_eigen, density_weight=density_weight)
+                ratios.append(ratio)
+                if ratio < ratios[0] / 2:
+                    break
+                if len(ratios) >= 4:
+                    if abs(ratios[-1] - ratios[-2]) < 0.005 and abs(ratios[-2] - ratios[-3]) < 0.005 and abs(
+                            ratios[-3] - ratios[-4]) < 0.005:
+                        flag = True
+                        break
+                t += inc
+            if flag:
+                break
+            inc /= 2
+        return ratios[-1]
+
+    def global_rate(self):
+        # 根据信息获得合适的剪枝率——auto
+        ratios = []
+
+        for i in range(100 + 1):
+            ret = self.get_ratio()
+            ratios.append(ret)
+
+        # by la why multiply two rates
+        for i in range(100 + 1):
+            self.global_prune_rate += self.rates[i] * ratios[i]
+        return self.global_prune_rate
+
+    def layer_rate(self):
+        compress_rate = self.get_rate_for_each_layers()
+        return compress_rate
+

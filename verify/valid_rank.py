@@ -121,4 +121,4 @@ def main():
     init_datasets()
     init_samplers()
     init_data_loaders()
-    get_rank()
+    # get_rank()

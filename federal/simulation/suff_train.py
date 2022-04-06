@@ -9,15 +9,24 @@ from federal.merge.FedAvg import FedAvg
 from dl.compress.HyperProvider import IntervalProvider
 from copy import deepcopy
 from utils.Visualizer import VisBoard
+from utils.DataExtractor import Extractor
 
 def vis_log():
-    vis = VisBoard()
+    data_res = Extractor()
+    vis = VisBoard(data_res)
     vis.single_var_dist('I', 'k')
 
 def init_datasets():
-    get_data(DataSetType.CIFAR100, data_type="train")
+
     get_data(DataSetType.ImageNet, data_type="train")
 
+def init_dataloader():
+    loader = get_data_loader(DataSetType.CIFAR10, data_type="train",
+                             batch_size=32, shuffle=True,
+                             num_workers=0, pin_memory=True)
+    inputs, label = next(loader)
+    print(inputs)
+    print(label)
 
 def vgg16_cifar10_single_convergence():
     list_ranks = []
@@ -97,10 +106,11 @@ def union_convergence():
         for idx in range(num_slices):
             hrank_objs[idx].restore_mem(union_dict)
 
-        hrank_objs[0].get_rank(test_loader)
-        list_ranks.append(hrank_objs[0].rank_dict)
+        # hrank_objs[0].get_rank(test_loader)
+        # list_ranks.append(hrank_objs[0].rank_dict)
 
         list_dict.clear()
+        union_dict = dict()
 
     GLOBAL_LOGGER.info('Test Loader------')
     hrank_objs[0].wrapper.valid_performance(test_loader)
@@ -121,6 +131,7 @@ def test_checkpoint():
 
 
 def main():
-    vgg16_cifar10_single_convergence()
-    # union_convergence()
-    vis_log()
+    # vgg16_cifar10_single_convergence()
+    # # union_convergence()
+    # vis_log()
+    init_dataloader()
