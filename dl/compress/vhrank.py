@@ -266,6 +266,9 @@ class VGG16HRank(HRank):
         self.cp_model = modelUtil.vgg_16_bn(pruning_rate)
         self.cp_model_sd = self.cp_model.state_dict()
 
+    def adjust_lr(self, factor: float):
+        for param_group in self.wrapper.optimizer.param_groups:
+            param_group["lr"] *= factor
 
 class ResNet56HRank(HRank):
 

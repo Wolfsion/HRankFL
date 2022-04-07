@@ -16,6 +16,7 @@ class VGG(nn.Module):
         self.features = self._make_layers(cfg)
         self.classifier = nn.Sequential(OrderedDict([
             ('linear1', nn.Linear(cfg[-2], cfg[-1])),
+            ('dropout', nn.Dropout(p=0.5)),
             ('norm1', nn.BatchNorm1d(cfg[-1])),
             ('relu1', nn.ReLU(inplace=True)),
             ('linear2', nn.Linear(cfg[-1], num_classes)),

@@ -11,6 +11,7 @@ from copy import deepcopy
 from utils.Visualizer import VisBoard
 from utils.DataExtractor import Extractor
 from utils.pathHandler import store
+import math
 
 def vis_log():
     data_res = Extractor()
@@ -108,6 +109,8 @@ def union_convergence():
 
         for idx in range(num_slices):
             hrank_objs[idx].restore_mem(union_dict)
+            hrank_objs[idx].adjust_lr(math.pow(STEP_DECAY, (client_per_round-1)*union_train_limit))
+
 
         hrank_objs[0].get_rank(test_loader)
         interval.push_simp_container(deepcopy(hrank_objs[0].rank_dict))

@@ -117,10 +117,17 @@ class CF10NIIDSampler(LSampler):
     def getIndices(self, datatype, num_slices, num_round, data_per_client, client_selection, client_per_round):
         assert datatype == DataSetType.CIFAR10, "must be CIFAR10"
         cifar10 = get_data(DataSetType.CIFAR10, data_type="train")
-        hetero_dir_part = CIFAR10Partitioner(cifar10.targets, num_slices,
-                                             balance=None, partition="dirichlet",
-                                             dir_alpha=0.3, seed=self.seed)
-        tmp_indices = hetero_dir_part.client_dict
+        # hetero_dir_part = CIFAR10Partitioner(cifar10.targets, num_slices,
+        #                                      balance=None, partition="dirichlet",
+        #                                      dir_alpha=0.3, seed=self.seed)
+        # tmp_indices = hetero_dir_part.client_dict
+        shards_part = CIFAR10Partitioner(cifar10.targets,
+                                         num_slices,
+                                         balance=None,
+                                         partition="shards",
+                                         num_shards=200,
+                                         seed=self.seed)
+        tmp_indices = shards_part.client_dict
         range_partition = list(range(num_slices))
         new_list_ind = [[] for _ in range(num_slices)]
 
