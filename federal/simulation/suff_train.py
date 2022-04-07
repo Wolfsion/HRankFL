@@ -83,6 +83,7 @@ def union_convergence():
     list_dict = []
     list_dis = []
     interval = IntervalProvider()
+    interval_r = IntervalProvider()
     union_dict = dict()
     fedavg = FedAvg()
     sampler = samplers.CF10NIIDSampler(num_slices, 100, data_per_client_epoch, True, client_per_round)
@@ -114,8 +115,8 @@ def union_convergence():
         GLOBAL_LOGGER.info(f"Round:{rnd},Pruning is proper?:{dis}")
         list_dis.append(dis)
         hrank_objs[0].get_rank(random=True)
-        interval.push_simp_container(deepcopy(hrank_objs[0].rank_dict))
-        dis = interval.is_timing_simple()
+        interval_r.push_simp_container(deepcopy(hrank_objs[0].rank_dict))
+        dis = interval_r.is_timing_simple()
         GLOBAL_LOGGER.info(f"Round:{rnd},Pruning is proper-random?:{dis}")
         list_dis.append(dis)
 
