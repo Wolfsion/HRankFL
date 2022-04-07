@@ -16,6 +16,7 @@ from dl.model import modelUtil
 
 class HRank(ABC):
     ERROR_MESS1 = "Illegal model_type."
+    ERROR_MESS2 = "Loader is none, must use random data."
     feature_result: torch.Tensor = torch.tensor(0.)
     total: torch.Tensor = torch.tensor(0.)
 
@@ -29,6 +30,10 @@ class HRank(ABC):
         self.cp_model = None
         self.cp_model_sd = None
         self.all_batch = 0
+
+        self.random_batch_size = 32
+        self.random_channel = 3
+        self.random_labels = 10
 
     # get feature map of certain layer via hook
     def get_feature_hook(self, module, input, output):
@@ -45,9 +50,13 @@ class HRank(ABC):
         self.total = self.total + imgs
         self.feature_result = self.feature_result / self.total
 
-    def drive_hook(self, sub_module: nn.Module, loader: tdata.DataLoader, hook_id: int = None):
+    def drive_hook(self, sub_module: nn.Module, loader: tdata.DataLoader,
+                   hook_id: int = None, random: bool = False):
         handler = sub_module.register_forward_hook(self.get_feature_hook)
-        self.feed_run(loader)
+        if random:
+            self.feed_random_run()
+        else:
+            self.feed_run(loader)
         handler.remove()
 
         if hook_id is not None:
@@ -113,28 +122,23 @@ class HRank(ABC):
 
         with torch.no_grad():
             for batch_idx, (inputs, targets) in enumerate(loader):
-                # use the first 5 batches to estimate the rank.
-
-                # ## debug
-                # # torch.Size([32, 3, 32, 32])
-                # # torch.Size([32, 10])
-                # if self.first:
-                #     GLOBAL_LOGGER.info('using random data...')
-                #     inputs = torch.randn(32, 3, 32, 32)
-                #     targets = torch.randn(32, 10)
-                # ## debug
-
                 if batch_idx >= limit:
                     break
-
                 loss, cort = self.wrapper.step(inputs, targets)
-
                 test_loss += loss
                 correct += cort
                 total += targets.size(0)
 
                 GLOBAL_LOGGER.info('Test batch_idx:%d | Loss: %.3f | Acc: %.3f%% (%d/%d)'
                                    % (batch_idx, test_loss / (batch_idx + 1), 100. * correct / total, correct, total))
+
+    def feed_random_run(self):
+        with torch.no_grad():
+            for batch_idx in range(limit):
+                GLOBAL_LOGGER.info('using random data...')
+                inputs = torch.randn(self.random_batch_size, 3, 32, 32)
+                targets = torch.randn(self.random_batch_size, self.random_labels)
+                self.wrapper.step(inputs, targets)
 
     def interrupt_disk(self, name: str = None):
         if name is None:
@@ -182,10 +186,13 @@ class VGG16HRank(HRank):
         self.relu_cfg = self.wrapper.device.access_model().relucfg
         self.cov_order = 0
 
-    def get_rank(self, loader: tdata.DataLoader):
+
+    def get_rank(self, loader: tdata.DataLoader = None, random: bool = False):
+        if loader is None:
+            assert random, self.ERROR_MESS1
         for cov_id in self.relu_cfg:
             cov_layer = self.wrapper.device.access_model().features[cov_id]
-            self.drive_hook(cov_layer, loader, self.cov_order)
+            self.drive_hook(cov_layer, loader, self.cov_order, random)
             self.cov_order += 1
         file_repo.reset_rank_index()
         self.cov_order = 0

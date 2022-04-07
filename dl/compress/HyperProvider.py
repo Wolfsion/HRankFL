@@ -12,6 +12,7 @@ from dl.model.vwrapper import VWrapper
 
 class IntervalProvider:
     SIMP_LEN = 2
+    NULL_NUM = -11111
     ERROR_MESS1 = "Call is_timing_simple, the len of ranks_dict list must be 2."
 
     def __init__(self, tiny_const: int = 0.15, sum_limit: int = 0.1):
@@ -47,8 +48,11 @@ class IntervalProvider:
     def is_timing_simple(self, ranks_dict: list = None):
         if ranks_dict is None:
             ranks_dict = self.cont_list
-        assert len(ranks_dict) == self.SIMP_LEN, self.ERROR_MESS1
-        return self.is_timing(ranks_dict, self.SIMP_LEN)
+        if len(ranks_dict) == self.SIMP_LEN:
+            return self.is_timing(ranks_dict, self.SIMP_LEN)
+        else:
+            GLOBAL_LOGGER.info(f"#len of cont_list is not 2.#")
+            return self.NULL_NUM
 
     def push_simp_container(self, ranks: dict):
         if len(self.cont_list) < 2:

@@ -10,6 +10,7 @@ from dl.compress.HyperProvider import IntervalProvider
 from copy import deepcopy
 from utils.Visualizer import VisBoard
 from utils.DataExtractor import Extractor
+from utils.pathHandler import store
 
 def vis_log():
     data_res = Extractor()
@@ -80,7 +81,8 @@ def resnet56_cifar100_single_convergence():
 
 def union_convergence():
     list_dict = []
-    list_ranks = []
+    list_dis = []
+    interval = IntervalProvider()
     union_dict = dict()
     fedavg = FedAvg()
     sampler = samplers.CF10NIIDSampler(num_slices, 100, data_per_client_epoch, True, client_per_round)
@@ -93,7 +95,7 @@ def union_convergence():
 
     hrank_objs = [VGG16HRank(modelUtil.vgg_16_bn(ORIGIN_CP_RATE)) for _ in range(num_slices)]
 
-    for rnd in range(100):
+    for rnd in range(10):
         GLOBAL_LOGGER.info(f"FL turn:{rnd}...")
         curt_selected = sampler.curt_selected()
         for idx in curt_selected[rnd]:
@@ -106,12 +108,24 @@ def union_convergence():
         for idx in range(num_slices):
             hrank_objs[idx].restore_mem(union_dict)
 
+        hrank_objs[0].get_rank(test_loader)
+        interval.push_simp_container(deepcopy(hrank_objs[0].rank_dict))
+        dis = interval.is_timing_simple()
+        GLOBAL_LOGGER.info(f"Round:{rnd},Pruning is proper?:{dis}")
+        list_dis.append(dis)
+        hrank_objs[0].get_rank(random=True)
+        interval.push_simp_container(deepcopy(hrank_objs[0].rank_dict))
+        dis = interval.is_timing_simple()
+        GLOBAL_LOGGER.info(f"Round:{rnd},Pruning is proper-random?:{dis}")
+        list_dis.append(dis)
+
         # hrank_objs[0].get_rank(test_loader)
         # list_ranks.append(hrank_objs[0].rank_dict)
 
         list_dict.clear()
         union_dict = dict()
 
+    store('res/dis.tmp', list_dis)
     GLOBAL_LOGGER.info('Test Loader------')
     hrank_objs[0].wrapper.valid_performance(test_loader)
     hrank_objs[0].interrupt_disk('union.snap')
