@@ -20,6 +20,11 @@ class HRank(ABC):
     feature_result: torch.Tensor = torch.tensor(0.)
     total: torch.Tensor = torch.tensor(0.)
 
+    feature_result_list = [0 for _ in range(MAX_HOOK_LAYER)]
+    total_list = [0 for _ in range(MAX_HOOK_LAYER)]
+    curt_index = 0
+    map_dict = {}
+
     def __init__(self, model_type: ModelType, model: nn.Module) -> None:
         self.mtype = model_type.value
         self.wrapper = VWrapper(model)
@@ -50,6 +55,23 @@ class HRank(ABC):
         self.total = self.total + imgs
         self.feature_result = self.feature_result / self.total
 
+    def get_feature_hook_beta(self, module, input, output):
+        imgs = output.shape[0]
+        channels = output.shape[1]
+        ranks = torch.tensor([torch.linalg.matrix_rank(output[i, j, :, :]).item()
+                              for i in range(imgs) for j in range(channels)])
+        ranks = ranks.view(imgs, -1).float()
+
+        # merge channel rank of all imgs
+        ranks = ranks.sum(0)
+
+        if module not in self.map_dict.keys():
+            self.map_dict[module] = self.curt_index
+            self.curt_index += 1
+        self.feature_result_list[self.map_dict[module]] *= self.total_list[self.map_dict[module]] + ranks
+        self.total_list[self.map_dict[module]] += imgs
+        self.feature_result_list[self.map_dict[module]] /= self.total_list[self.map_dict[module]]
+
     def drive_hook(self, sub_module: nn.Module, loader: tdata.DataLoader,
                    hook_id: int = None, random: bool = False):
         handler = sub_module.register_forward_hook(self.get_feature_hook)
@@ -65,6 +87,13 @@ class HRank(ABC):
         np.save(file_repo.rank(), self.feature_result.numpy())
         self.feature_result = torch.tensor(0.)
         self.total = torch.tensor(0.)
+
+    def global_flash(self):
+        self.feature_result_list = [torch.tensor(0.) for _ in range(MAX_HOOK_LAYER)]
+        self.total_list = [torch.tensor(0.) for _ in range(MAX_HOOK_LAYER)]
+        self.curt_index = 0
+        self.map_dict = {}
+        file_repo.reset_rank_index()
 
     def learn_run(self, loader: tdata.DataLoader):
         test_loss = 0
@@ -196,6 +225,27 @@ class VGG16HRank(HRank):
             self.cov_order += 1
         file_repo.reset_rank_index()
         self.cov_order = 0
+
+    def get_rank_beta(self, loader: tdata.DataLoader = None, random: bool = False):
+        if loader is None:
+            assert random, self.ERROR_MESS1
+        handlers = []
+        for cov_id in self.relu_cfg:
+            cov_layer = self.wrapper.device.access_model().features[cov_id]
+            handlers.append(cov_layer.register_forward_hook(self.get_feature_hook_beta))
+
+        if random:
+            self.feed_random_run()
+        else:
+            self.feed_run(loader)
+        for handler in handlers:
+            handler.remove()
+
+        for i in range(len(self.feature_result_list)):
+            self.rank_dict[i] = self.feature_result_list[i].numpy()
+            np.save(file_repo.rank(), self.feature_result_list[i].numpy())
+
+        self.global_flash()
 
     def get_rank_plus(self):
         pass

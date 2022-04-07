@@ -90,6 +90,7 @@ class RateProvider:
         self.global_prune_rate = 0
         self.clients = clients
         self.rates = self.analyzer.total_rates()
+        self.wrapper.get_prunable_layers()
 
     def get_rate_for_each_layers(self):
         """
@@ -110,7 +111,7 @@ class RateProvider:
 
         # model: self.wrapper.model.prunable_layers
         # layer(DenseLayer):
-        for i, layer in enumerate(self.wrapper.model.prunable_layers):
+        for i, layer in enumerate(self.wrapper.prunable_layers):
             if is_conv(layer):
                 a = np.abs(layer.weight.data.clone().cpu().detach().numpy()) < threshold
                 b = int(a.sum())

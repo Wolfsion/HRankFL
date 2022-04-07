@@ -11,6 +11,7 @@ gpu = [0, 1]
 train_limit = 1000
 union_train_limit = 10
 batch_size = 32
+MAX_HOOK_LAYER = 50
 
 valid_limit = 3
 limit = 5 

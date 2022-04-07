@@ -112,12 +112,12 @@ def union_convergence():
             hrank_objs[idx].adjust_lr(math.pow(STEP_DECAY, (client_per_round-1)*union_train_limit))
 
 
-        hrank_objs[0].get_rank(test_loader)
+        hrank_objs[0].get_rank_beta(test_loader)
         interval.push_simp_container(deepcopy(hrank_objs[0].rank_dict))
         dis = interval.is_timing_simple()
         GLOBAL_LOGGER.info(f"Round:{rnd},Pruning is proper?:{dis}")
         list_dis.append(dis)
-        hrank_objs[0].get_rank(random=True)
+        hrank_objs[0].get_rank_beta(random=True)
         interval_r.push_simp_container(deepcopy(hrank_objs[0].rank_dict))
         dis = interval_r.is_timing_simple()
         GLOBAL_LOGGER.info(f"Round:{rnd},Pruning is proper-random?:{dis}")

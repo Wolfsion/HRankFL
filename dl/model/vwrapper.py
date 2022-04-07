@@ -100,6 +100,8 @@ class VWrapper:
             self.optimizer = optim
             self.lr_scheduler = scheduler
 
+        self.prunable_layers = []
+
     def use_default_optim(self):
         # self.optimizer = SGD(self.model.parameters(), lr=INIT_LR)
         self.optimizer = optim.SGD(self.model.parameters(), lr=0.01, momentum=0.9, weight_decay=1e-2)
@@ -209,3 +211,6 @@ class VWrapper:
 
         GLOBAL_LOGGER.info('Total params: %d | Trainable params: %d'
                            % (total_params, total_trainable_params))
+
+    def get_prunable_layers(self):
+        pass
