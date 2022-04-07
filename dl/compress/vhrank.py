@@ -20,8 +20,8 @@ class HRank(ABC):
     feature_result: torch.Tensor = torch.tensor(0.)
     total: torch.Tensor = torch.tensor(0.)
 
-    feature_result_list = [0 for _ in range(MAX_HOOK_LAYER)]
-    total_list = [0 for _ in range(MAX_HOOK_LAYER)]
+    feature_result_list = [torch.tensor(0.) for _ in range(MAX_HOOK_LAYER)]
+    total_list = [torch.tensor(0.) for _ in range(MAX_HOOK_LAYER)]
     curt_index = 0
     map_dict = {}
 
@@ -241,7 +241,7 @@ class VGG16HRank(HRank):
         for handler in handlers:
             handler.remove()
 
-        for i in range(len(self.feature_result_list)):
+        for i in range(self.curt_index):
             self.rank_dict[i] = self.feature_result_list[i].numpy()
             np.save(file_repo.rank(), self.feature_result_list[i].numpy())
 
