@@ -7,6 +7,7 @@ from utils.pathHandler import HRankPathGather
 # Static Env
 ###
 
+# gpu = [0, 1]
 gpu = [0]
 train_limit = 1000
 union_train_limit = 10

@@ -65,7 +65,7 @@ class HRank(ABC):
         # merge channel rank of all imgs
         ranks = ranks.sum(0)
 
-        if module not in self.map_dict.keys():
+        if id(module) not in self.map_dict.keys():
             self.map_dict[id(module)] = self.curt_index
             self.curt_index += 1
 
@@ -116,6 +116,7 @@ class HRank(ABC):
                 # union train config
                 if batch_idx >= union_train_limit:
                     # self.wrapper.valid_performance(loader)
+                    GLOBAL_LOGGER.info(f"The current learning rate: {self.wrapper.optimizer.param_groups[0]['lr']}")
                     break
 
                 loss, cort = self.wrapper.step(inputs, targets, train=True)
