@@ -66,11 +66,13 @@ class HRank(ABC):
         ranks = ranks.sum(0)
 
         if module not in self.map_dict.keys():
-            self.map_dict[module] = self.curt_index
+            self.map_dict[id(module)] = self.curt_index
             self.curt_index += 1
-        self.feature_result_list[self.map_dict[module]] *= self.total_list[self.map_dict[module]] + ranks
-        self.total_list[self.map_dict[module]] += imgs
-        self.feature_result_list[self.map_dict[module]] /= self.total_list[self.map_dict[module]]
+
+        self.feature_result_list[self.map_dict[id(module)]] = self.feature_result_list[self.map_dict[id(module)]] * self.total_list[self.map_dict[id(module)]]
+        self.feature_result_list[self.map_dict[id(module)]] = self.feature_result_list[self.map_dict[id(module)]] + ranks
+        self.total_list[self.map_dict[id(module)]] = self.total_list[self.map_dict[id(module)]] + imgs
+        self.feature_result_list[self.map_dict[id(module)]] = self.feature_result_list[self.map_dict[id(module)]] / self.total_list[self.map_dict[id(module)]]
 
     def drive_hook(self, sub_module: nn.Module, loader: tdata.DataLoader,
                    hook_id: int = None, random: bool = False):
