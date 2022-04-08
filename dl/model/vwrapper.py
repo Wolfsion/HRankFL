@@ -186,7 +186,11 @@ class VWrapper:
         with torch.no_grad():
             for batch_idx, (inputs, targets) in enumerate(loader):
                 if first_feed:
-                    tmp = deepcopy(self.model.module)
+                    gpus = self.device.GPUs
+                    if gpus:
+                        tmp = deepcopy(self.model.module)
+                    else:
+                        tmp = deepcopy(self.model)
                     flops, params = profile(tmp.cpu(), inputs=(inputs,))
                     first_feed = False
 

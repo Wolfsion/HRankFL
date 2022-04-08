@@ -50,6 +50,7 @@ class Extractor:
     def __init__(self):
         # self.info_vars = {"F": [], "A": [], "T": [], "R": []}
         self.info_vars = VContainer()
+        self.cnt = 0
 
     def map_list(self, mode: str) -> List[int]:
         indices = []
@@ -65,6 +66,8 @@ class Extractor:
                     for ma in matches:
                         self.info_vars.flash(self.KEYS[idx], float(ma.group()))
                         self.info_vars.flash('class', 'VGG16')
+                        self.info_vars.flash('index', self.cnt)
+                        self.cnt += 1
 
     def map_vars(self, axis: str) -> dict:
         assert len(axis) < 5, self.ERROR_MESS1
@@ -73,4 +76,5 @@ class Extractor:
         self.parse(indices)
         for idx in indices:
             self.info_vars.store(self.KEYS[idx])
+        self.cnt = 0
         return self.info_vars.container

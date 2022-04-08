@@ -58,11 +58,8 @@ class VisBoard:
 
     def double_vars_dist(self, axis: str, form: str):
         mode = self.map_int(form)
-
         df = self.io.map_vars(axis)
-
-        sns.jointplot(data=df, x='acc', y='rate', hue="class")
-
+        sns.jointplot(data=df, x='index', y='I', hue="class")
         plt.savefig(file_repo.img("test"))
 
     def double_vars_regression(self, axis: str, form: str):

@@ -16,7 +16,7 @@ import math
 def vis_log():
     data_res = Extractor()
     vis = VisBoard(data_res)
-    vis.single_var_dist('I', 'k')
+    vis.double_vars_dist('I', 'k')
 
 def init_datasets():
 
@@ -41,22 +41,20 @@ def vgg16_cifar10_single_convergence():
 
     GLOBAL_LOGGER.info("Sampler initialized")
 
-    rank_flag = False
+    rank_first = True
     hrank_obj = VGG16HRank(modelUtil.vgg_16_bn(ORIGIN_CP_RATE))
-    for i in range(2000):
+    for i in range(1000):
         GLOBAL_LOGGER.info(f"Epoch{i} Train...")
         hrank_obj.learn_run(loader)
-        if i > 500:
-            if i % 100 == 0:
-                hrank_obj.get_rank(loader)
+        if i > 100:
+            if rank_first:
+                hrank_obj.get_rank_beta(loader)
                 interval.push_simp_container(deepcopy(hrank_obj.rank_dict))
-                rank_flag = True
-                continue
-            if rank_flag:
-                hrank_obj.get_rank(loader)
+                rank_first = False
+            else:
+                hrank_obj.get_rank_beta(loader)
                 interval.push_simp_container(deepcopy(hrank_obj.rank_dict))
                 GLOBAL_LOGGER.info(f"Epoch:{i},Pruning is proper?:{interval.is_timing_simple()}")
-                rank_flag = False
 
     GLOBAL_LOGGER.info('Test Loader------')
     hrank_obj.wrapper.valid_performance(test_loader)
@@ -149,7 +147,7 @@ def test_checkpoint():
 
 
 def main():
-    # vgg16_cifar10_single_convergence()
-    union_convergence()
-    # vis_log()
+    vgg16_cifar10_single_convergence()
+    # union_convergence()
+    vis_log()
     # init_dataloader()
