@@ -30,6 +30,28 @@ def init_dataloader():
     print(inputs)
     print(label)
 
+def test_interval():
+    loader = get_data_loader(DataSetType.CIFAR10, data_type="train",
+                             batch_size=32, shuffle=True,
+                             num_workers=0, pin_memory=True)
+    test_loader = get_data_loader(DataSetType.CIFAR10, data_type="test", batch_size=32,
+                                  shuffle=True, num_workers=0, pin_memory=True)
+
+    hrank_obj = VGG16HRank(modelUtil.vgg_16_bn(ORIGIN_CP_RATE))
+
+    for i in range(1000):
+        GLOBAL_LOGGER.info(f"Epoch{i} Train...")
+        hrank_obj.learn_run(loader)
+        if i % 10 == 0 and i != 0:
+            hrank_obj.get_rank_beta(test_loader)
+            hrank_obj.init_cp_model(vgg16_candidate_rate)
+            hrank_obj.load_params()
+            hrank_obj.valid_performance(test_loader, simp=True)
+
+    GLOBAL_LOGGER.info('Test Loader------')
+    hrank_obj.wrapper.valid_performance(test_loader)
+    hrank_obj.interrupt_disk('single.snap')
+
 def vgg16_cifar10_single_convergence():
     list_ranks = []
     interval = IntervalProvider()
@@ -147,7 +169,8 @@ def test_checkpoint():
 
 
 def main():
-    vgg16_cifar10_single_convergence()
-    # union_convergence()
-    vis_log()
+    test_interval()
+    # vgg16_cifar10_single_convergence()
+    # # union_convergence()
+    # vis_log()
     # init_dataloader()

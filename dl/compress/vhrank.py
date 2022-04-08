@@ -39,6 +39,7 @@ class HRank(ABC):
         self.random_batch_size = 32
         self.random_channel = 3
         self.random_labels = 10
+        self.last_acc = 0.0
 
     # get feature map of certain layer via hook
     def get_feature_hook(self, module, input, output):
@@ -163,6 +164,7 @@ class HRank(ABC):
 
                 GLOBAL_LOGGER.info('Test batch_idx:%d | Loss: %.3f | Acc: %.3f%% (%d/%d)'
                                    % (batch_idx, test_loss / (batch_idx + 1), 100. * correct / total, correct, total))
+        self.last_acc = 100. * correct / total
 
     def feed_random_run(self):
         with torch.no_grad():
@@ -190,9 +192,12 @@ class HRank(ABC):
     def restore_mem(self, state_dict: dict):
         self.wrapper.model.load_state_dict(state_dict)
 
-    def valid_performance(self, loader: tdata.DataLoader):
+    def valid_performance(self, loader: tdata.DataLoader, simp: bool = False):
         wrapper = VWrapper(self.cp_model)
-        wrapper.valid_performance(loader)
+        if simp:
+            wrapper.valid_performance_simp(loader, self.last_acc)
+        else:
+            wrapper.valid_performance(loader)
 
     @abstractmethod
     def get_rank(self, loader: tdata.DataLoader):

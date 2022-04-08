@@ -216,5 +216,21 @@ class VWrapper:
         GLOBAL_LOGGER.info('Total params: %d | Trainable params: %d'
                            % (total_params, total_trainable_params))
 
+    def valid_performance_simp(self, loader: tdata.DataLoader, last_acc: float):
+        test_loss = 0
+        correct = 0
+        total = 0
+
+        with torch.no_grad():
+            for batch_idx, (inputs, targets) in enumerate(loader):
+                if batch_idx >= valid_limit:
+                    break
+                loss, cort = self.step(inputs, targets)
+                test_loss += loss
+                correct += cort
+                total += targets.size(0)
+
+        GLOBAL_LOGGER.info('#Acc:%.3f%%#' % ((100. * correct / total) - last_acc))
+
     def get_prunable_layers(self):
         pass
