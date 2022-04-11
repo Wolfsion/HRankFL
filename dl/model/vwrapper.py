@@ -229,7 +229,7 @@ class VWrapper:
                 test_loss += loss
                 correct += cort
                 total += targets.size(0)
-
+        GLOBAL_LOGGER.info('Pruned Acc: %.3f%% (%d/%d)' % (100. * correct / total, correct, total))
         GLOBAL_LOGGER.info('#Acc:%.3f%%#' % ((100. * correct / total) - last_acc))
 
     def get_prunable_layers(self):

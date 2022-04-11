@@ -43,7 +43,8 @@ def test_interval():
         GLOBAL_LOGGER.info(f"Epoch{i} Train...")
         hrank_obj.learn_run(loader)
         if i % 10 == 0 and i != 0:
-            hrank_obj.get_rank_beta(test_loader)
+            # hrank_obj.get_rank_beta(test_loader)
+            hrank_obj.get_rank(test_loader)
             hrank_obj.init_cp_model(vgg16_candidate_rate)
             hrank_obj.load_params()
             hrank_obj.valid_performance(test_loader, simp=True)
