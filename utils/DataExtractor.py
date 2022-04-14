@@ -1,6 +1,6 @@
 import re
 import random
-
+import pandas as pd
 import numpy as np
 from typing import List
 
@@ -25,8 +25,8 @@ def get_ori_lists():
 
 def get_ori_dict():
     return {'index':np.array(range(100)),
-            'acc':np.array(random_list()),
-            'rate':np.array(random_list()),
+            'FLOPs':np.array(random_list()),
+            'Acc':np.array(random_list()),
             'class':np.array(random_label())}
 
 def get_lists():
@@ -36,27 +36,21 @@ def get_lists():
 class Extractor:
     ERROR_MESS1 = "The length cannot exceed 4 characters."
     ERROR_MESS2 = "The mode str contains not defined character."
+
+    CLASS_COL_NAME = "class"
+    CURRENT_CLASS_NAME = "VGG16"
     log_path = 'logs/hrankFL.log'
-    KEYS = ['F', 'A', 'I', 'R']
+    KEYS = ['FLOPs', 'Acc', 'Interval', 'Rate']
     REG_PATTERNS = [r'(?<=#FLOPs:)[^\#]+(?=#)',
                     r'(?<=#Acc:)[^\#]+(?=#)',
                     r'(?<=#Interval:)[^\#]+(?=#)',
                     r'(?<=#Rate:)[^\#]+(?=#)']
-    FLOPs = 0
-    Acc = 1
-    Interval = 2
-    Rate = 3
+    CSV_FILE_NAME = "vital"
 
     def __init__(self):
-        # self.info_vars = {"F": [], "A": [], "T": [], "R": []}
         self.info_vars = VContainer()
-        self.cnt = 0
-
-    def map_list(self, mode: str) -> List[int]:
-        indices = []
-        for ch in mode:
-            indices.append(self.KEYS.index(ch))
-        return indices
+        self.rows = 0
+        self.data_frame = None
 
     def parse(self, indices: list):
         with open(self.log_path, "rb") as f:
@@ -65,16 +59,28 @@ class Extractor:
                     matches = re.finditer(self.REG_PATTERNS[idx], str(line), re.M)
                     for ma in matches:
                         self.info_vars.flash(self.KEYS[idx], float(ma.group()))
-                        self.info_vars.flash('class', 'VGG16')
-                        self.info_vars.flash('index', self.cnt)
-                        self.cnt += 1
+                        self.info_vars.flash(self.CLASS_COL_NAME, self.CURRENT_CLASS_NAME)
+                        self.rows += 1
 
-    def map_vars(self, axis: str) -> dict:
-        assert len(axis) < 5, self.ERROR_MESS1
-        assert all([ch in self.KEYS for ch in axis]), self.ERROR_MESS2
-        indices = self.map_list(axis)
-        self.parse(indices)
-        for idx in indices:
-            self.info_vars.store(self.KEYS[idx])
-        self.cnt = 0
-        return self.info_vars.container
+    # +-------+-------+-----+----------+------+-------+
+    # | index | FLOPs | Acc | Interval | Rate | class |
+    # +-------+-------+-----+----------+------+-------+
+    # | 0     | 1.1M  | 98% | Round:100| 0.9  | VGG16 |
+    # | 1     | 1.1M  | 50% | Round:50 | 0.8  | VGG16 |
+    # +-------+-------+-----+----------+------+-------+
+    def toDataFrame(self) -> pd.DataFrame:
+        return self.data_frame
+
+    # def map_vars(self, key_indices: List[int]) -> pd.DataFrame:
+    #     self.parse(key_indices)
+    #     self.data_frame.df.to_csv(file_repo.visual(name=self.CSV_FILE_NAME))
+    #     self.data_frame = pd.DataFrame(self.info_vars.container)
+    #     return self.data_frame
+    def map_vars(self, key_indices: List[int]) -> pd.DataFrame:
+        dic = get_ori_dict()
+        self.data_frame = pd.DataFrame(dic)
+        return self.data_frame
+
+    def clear_container(self):
+        self.info_vars.container.clear()
+        self.rows = 0

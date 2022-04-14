@@ -14,8 +14,7 @@ from utils.pathHandler import store
 import math
 
 def vis_log():
-    data_res = Extractor()
-    vis = VisBoard(data_res)
+    vis = VisBoard()
     vis.double_vars_dist('I', 'k')
 
 def init_datasets():
@@ -170,8 +169,8 @@ def test_checkpoint():
 
 
 def main():
-    test_interval()
-    # vgg16_cifar10_single_convergence()
-    # # union_convergence()
-    # vis_log()
-    # init_dataloader()
+    # test_interval()
+    # # vgg16_cifar10_single_convergence()
+    union_convergence()
+    # # vis_log()
+    # # init_dataloader()
