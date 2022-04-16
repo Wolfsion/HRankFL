@@ -8,7 +8,7 @@ relucfg = [2, 6, 9, 13, 16, 19, 23, 26, 29, 33, 36, 39, 42]
 
 
 class VGG(nn.Module):
-    def __init__(self, compress_rate, cfg=None, in_channels=3, num_classes=10):
+    def __init__(self, compress_rate, cfg=None, in_channels=3):
         super(VGG, self).__init__()
         if cfg is None:
             cfg = vgg16_cfg
@@ -17,7 +17,17 @@ class VGG(nn.Module):
         self.compress_rate.append(0.0)
         self.features = self._make_layers(cfg, in_channels)
 
-        initialize(self)
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.xavier_normal_(m.weight)
+                nn.init.constant_(m.bias, 0)
+                # 也可以判断是否为conv2d，使用相应的初始化方式
+            elif isinstance(m, nn.Conv2d):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                # 是否为批归一化层
+            elif isinstance(m, nn.BatchNorm2d):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
 
     def _make_layers(self, cfg, in_channels):
         layers = nn.Sequential()
@@ -45,7 +55,7 @@ class VGG(nn.Module):
 
 class VGG11(VGG):
     def __init__(self, compress_rate, in_channels=3, num_classes=10):
-        super().__init__(compress_rate, vgg11_cfg, in_channels, num_classes)
+        super().__init__(compress_rate, vgg11_cfg, in_channels)
         self.classifier = nn.Sequential(OrderedDict([
             ('linear1', nn.Linear(vgg16_cfg[-2], 512)),
             ('relu1', nn.ReLU(inplace=True)),
@@ -57,7 +67,7 @@ class VGG11(VGG):
 
 class VGG16(VGG):
     def __init__(self, compress_rate, in_channels=3, num_classes=10):
-        super().__init__(compress_rate, vgg16_cfg, in_channels, num_classes)
+        super().__init__(compress_rate, vgg16_cfg, in_channels)
         self.classifier = nn.Sequential(OrderedDict([
             ('linear1', nn.Linear(vgg16_cfg[-2], vgg16_cfg[-1])),
             ('dropout', nn.Dropout(p=0.5)),
