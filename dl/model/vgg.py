@@ -1,12 +1,13 @@
 import torch.nn as nn
 from collections import OrderedDict
+from abc import ABC, abstractmethod
 
 vgg11_cfg = [64, 'M', 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M']
 vgg16_cfg = [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512]
 relucfg = [2, 6, 9, 13, 16, 19, 23, 26, 29, 33, 36, 39, 42]
 
 
-class VGG(nn.Module):
+class VGG(nn.Module, ABC):
     def __init__(self, compress_rate, cfg=None, in_channels=3):
         super(VGG, self).__init__()
         if cfg is None:
@@ -44,12 +45,9 @@ class VGG(nn.Module):
                 in_channels = x
         return layers
 
+    @abstractmethod
     def forward(self, x):
-        x = self.features(x)
-        x = nn.AvgPool2d(2)(x)
-        x = x.view(x.size(0), -1)
-        x = self.classifier(x)
-        return x
+        pass
 
 
 class VGG11(VGG):
@@ -68,6 +66,7 @@ class VGG11(VGG):
         x = x.view(x.size(0), -1)
         x = self.classifier(x)
         return x
+
 
 class VGG16(VGG):
     def __init__(self, compress_rate, in_channels=3, num_classes=10):
