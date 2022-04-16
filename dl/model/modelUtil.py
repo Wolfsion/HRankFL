@@ -10,57 +10,44 @@ from copy import deepcopy
 
 from dl.model.mobilenet import MobileNetV2
 from dl.model.resnet import ResNet, BasicBlock
-from dl.model.vgg import VGG
+from dl.model.vgg import VGG16
+from dl.model.vgg import VGG11
 from env.preEnv import *
 from env.runtimeEnv import *
 
 
-hasParameter = lambda x: len(list(x.parameters())) != 0
+def initialize(model: nn.Module):
+    for m in model.modules():
+        if isinstance(m, nn.Linear):
+            nn.init.xavier_normal_(m.weight)
+            nn.init.constant_(m.bias, 0)
+            # 也可以判断是否为conv2d，使用相应的初始化方式
+        elif isinstance(m, nn.Conv2d):
+            nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+            # 是否为批归一化层
+        elif isinstance(m, nn.BatchNorm2d):
+            nn.init.constant_(m.weight, 1)
+            nn.init.constant_(m.bias, 0)
 
-
-def traverse(model: nn.Module):
-    list1 = []
-    list2 = []
-    traverse_module(model, hasParameter, list1, list2)
-    prunable_nums = [ly_id for ly_id, ly in enumerate(list1) if not isinstance(ly, nn.BatchNorm2d)]
-    list3 = [list1[ly_id] for ly_id in prunable_nums]
-    list4 = [list2[ly_id] for ly_id in prunable_nums]
-    ret = {
-        "param_layers": list1,
-        "param_layer_prefixes": list2,
-        "prunable_layers": list3,
-        "prunable_layer_prefixes": list4
-    }
-    return ret
-
-
-def traverse_module(module, criterion, layers: list, names: list, prefix="", leaf_only=True):
-    if leaf_only:
-        for key, submodule in module._modules.items():
-            new_prefix = prefix
-            if prefix != "":
-                new_prefix += '.'
-            new_prefix += key
-            # is leaf and satisfies criterion
-            if len(submodule._modules.keys()) == 0 and criterion(submodule):
-                layers.append(submodule)
-                names.append(new_prefix)
-            traverse_module(submodule, criterion, layers, names, prefix=new_prefix, leaf_only=leaf_only)
-    else:
-        raise NotImplementedError("Supports only leaf modules")
 
 # for cifar10
 def vgg_16_bn(compress_rate):
-    return VGG(compress_rate=compress_rate)
+    return VGG16(compress_rate=compress_rate)
+
+
+def vgg_11_bn(compress_rate):
+    return VGG11(compress_rate=compress_rate)
 
 
 # for cifar100
 def resnet_56(compress_rate):
     return ResNet(BasicBlock, 56, compress_rate=compress_rate, num_classes=100)
 
+
 # for cifar10
 def resnet_110(compress_rate):
     return ResNet(BasicBlock, 110, compress_rate=compress_rate)
+
 
 # for cifar100
 def mobilenet_v2(compress_rate):

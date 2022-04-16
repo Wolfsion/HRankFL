@@ -64,19 +64,23 @@ def vgg16_cifar10_single_convergence():
     GLOBAL_LOGGER.info("Sampler initialized")
 
     rank_first = True
-    hrank_obj = VGG16HRank(modelUtil.vgg_16_bn(ORIGIN_CP_RATE))
+
+    # model1 = modelUtil.vgg_16_bn(ORIGIN_CP_RATE)
+    model2 = modelUtil.vgg_11_bn(ORIGIN_CP_RATE)
+
+    hrank_obj = VGG16HRank(model2)
     for i in range(1000):
         GLOBAL_LOGGER.info(f"Epoch{i} Train...")
         hrank_obj.learn_run(loader)
-        if i > 100:
-            if rank_first:
-                hrank_obj.get_rank_beta(loader)
-                interval.push_simp_container(deepcopy(hrank_obj.rank_dict))
-                rank_first = False
-            else:
-                hrank_obj.get_rank_beta(loader)
-                interval.push_simp_container(deepcopy(hrank_obj.rank_dict))
-                GLOBAL_LOGGER.info(f"Epoch:{i},Pruning is proper?:{interval.is_timing_simple()}")
+        # if i > 100:
+        #     if rank_first:
+        #         hrank_obj.get_rank_beta(loader)
+        #         interval.push_simp_container(deepcopy(hrank_obj.rank_dict))
+        #         rank_first = False
+        #     else:
+        #         hrank_obj.get_rank_beta(loader)
+        #         interval.push_simp_container(deepcopy(hrank_obj.rank_dict))
+        #         GLOBAL_LOGGER.info(f"Epoch:{i},Pruning is proper?:{interval.is_timing_simple()}")
 
     GLOBAL_LOGGER.info('Test Loader------')
     hrank_obj.wrapper.valid_performance(test_loader)
@@ -132,16 +136,16 @@ def union_convergence():
             hrank_objs[idx].adjust_lr(math.pow(STEP_DECAY, (client_per_round-1)*union_train_limit))
 
 
-        hrank_objs[0].get_rank_beta(test_loader)
-        interval.push_simp_container(deepcopy(hrank_objs[0].rank_dict))
-        dis = interval.is_timing_simple()
-        GLOBAL_LOGGER.info(f"Round:{rnd},Pruning is proper?:{dis}")
-        list_dis.append(dis)
-        hrank_objs[0].get_rank_beta(random=True)
-        interval_r.push_simp_container(deepcopy(hrank_objs[0].rank_dict))
-        dis = interval_r.is_timing_simple()
-        GLOBAL_LOGGER.info(f"Round:{rnd},Pruning is proper-random?:{dis}")
-        list_dis.append(dis)
+        # hrank_objs[0].get_rank_beta(test_loader)
+        # interval.push_simp_container(deepcopy(hrank_objs[0].rank_dict))
+        # dis = interval.is_timing_simple()
+        # GLOBAL_LOGGER.info(f"Round:{rnd},Pruning is proper?:{dis}")
+        # list_dis.append(dis)
+        # hrank_objs[0].get_rank_beta(random=True)
+        # interval_r.push_simp_container(deepcopy(hrank_objs[0].rank_dict))
+        # dis = interval_r.is_timing_simple()
+        # GLOBAL_LOGGER.info(f"Round:{rnd},Pruning is proper-random?:{dis}")
+        # list_dis.append(dis)
 
         # hrank_objs[0].get_rank(test_loader)
         # list_ranks.append(hrank_objs[0].rank_dict)
@@ -170,7 +174,7 @@ def test_checkpoint():
 
 def main():
     # test_interval()
-    # # vgg16_cifar10_single_convergence()
-    union_convergence()
+    vgg16_cifar10_single_convergence()
+    # union_convergence()
     # # vis_log()
     # # init_dataloader()
