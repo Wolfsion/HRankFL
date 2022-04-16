@@ -1,6 +1,5 @@
 import torch.nn as nn
 from collections import OrderedDict
-from dl.model.modelUtil import initialize
 
 vgg11_cfg = [64, 'M', 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M']
 vgg16_cfg = [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512]
@@ -64,6 +63,11 @@ class VGG11(VGG):
             ('linear3', nn.Linear(512, num_classes)),
         ]))
 
+    def forward(self, x):
+        x = self.features(x)
+        x = x.view(x.size(0), -1)
+        x = self.classifier(x)
+        return x
 
 class VGG16(VGG):
     def __init__(self, compress_rate, in_channels=3, num_classes=10):
@@ -75,3 +79,10 @@ class VGG16(VGG):
             ('relu1', nn.ReLU(inplace=True)),
             ('linear2', nn.Linear(vgg16_cfg[-1], num_classes)),
         ]))
+
+    def forward(self, x):
+        x = self.features(x)
+        x = nn.AvgPool2d(2)(x)
+        x = x.view(x.size(0), -1)
+        x = self.classifier(x)
+        return x
