@@ -54,5 +54,5 @@ mobile_candidate_rate = [0.] + [0.3]*7
 ###
 
 # Path
-file_repo = HRankPathGather(resnet_model, datasets, images)
+file_repo = HRankPathGather(vgg_model, datasets, images)
 
