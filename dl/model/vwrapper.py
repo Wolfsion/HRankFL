@@ -230,7 +230,7 @@ class VWrapper:
             correct += cort
             total += targets.size(0)
             GLOBAL_LOGGER.info('#Rate:%d#' % batch_idx)
-            GLOBAL_LOGGER.info('[%d]#Interval:%.3f%%#' % last_acc)
+            GLOBAL_LOGGER.info('#Interval:%.3f%%#' % last_acc)
             GLOBAL_LOGGER.info('[%d]#Acc:%.3f%%# (%d/%d)'
                                % (batch_idx, 100. * cort / targets.size(0), cort, targets.size(0)))
 

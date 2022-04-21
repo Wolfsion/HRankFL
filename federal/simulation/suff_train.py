@@ -57,14 +57,28 @@ def test_interval():
 
     hrank_obj = VGG16HRank(modelUtil.vgg_16_bn(ORIGIN_CP_RATE))
 
+    flag4, flag6, flag8 = True
     for i in range(1000):
         GLOBAL_LOGGER.info(f"Epoch{i} Train...")
         hrank_obj.learn_run(loader)
-        if hrank_obj.last_acc >= 40 or hrank_obj.last_acc >= 60 or hrank_obj.last_acc >= 80:
+        if hrank_obj.last_acc >= 40 and flag4:
             hrank_obj.get_rank(test_loader)
             hrank_obj.init_cp_model(vgg16_candidate_rate)
             hrank_obj.load_params()
             hrank_obj.valid_performance(test_loader, simp=True)
+            flag4 = False
+        if hrank_obj.last_acc >= 60 and flag6:
+            hrank_obj.get_rank(test_loader)
+            hrank_obj.init_cp_model(vgg16_candidate_rate)
+            hrank_obj.load_params()
+            hrank_obj.valid_performance(test_loader, simp=True)
+            flag6 = False
+        if hrank_obj.last_acc >= 80 and flag8:
+            hrank_obj.get_rank(test_loader)
+            hrank_obj.init_cp_model(vgg16_candidate_rate)
+            hrank_obj.load_params()
+            hrank_obj.valid_performance(test_loader, simp=True)
+            flag8 = False
 
     GLOBAL_LOGGER.info('Test Loader------')
     hrank_obj.wrapper.valid_performance(test_loader)
