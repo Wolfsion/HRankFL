@@ -39,7 +39,8 @@ class Extractor:
 
     CLASS_COL_NAME = "class"
     CURRENT_CLASS_NAME = "VGG16"
-    log_path = 'logs/hrankFL.log'
+    # log_path = 'logs/hrankFL.log'
+    log_path = 'inter.out'
     KEYS = ['FLOPs', 'Acc', 'Interval', 'Rate']
     REG_PATTERNS = [r'(?<=#FLOPs:)[^\#]+(?=#)',
                     r'(?<=#Acc:)[^\#]+(?=#)',
@@ -58,7 +59,7 @@ class Extractor:
                 for idx in indices:
                     matches = re.finditer(self.REG_PATTERNS[idx], str(line), re.M)
                     for ma in matches:
-                        self.info_vars.flash(self.KEYS[idx], float(ma.group()))
+                        self.info_vars.flash(self.KEYS[idx], float(ma.group()[:-1]))
                         self.info_vars.flash(self.CLASS_COL_NAME, self.CURRENT_CLASS_NAME)
                         self.rows += 1
 
@@ -77,8 +78,8 @@ class Extractor:
     #     self.data_frame = pd.DataFrame(self.info_vars.container)
     #     return self.data_frame
     def map_vars(self, key_indices: List[int]) -> pd.DataFrame:
-        dic = get_ori_dict()
-        self.data_frame = pd.DataFrame(dic)
+        self.parse(key_indices)
+        self.data_frame = pd.DataFrame(self.info_vars.container)
         return self.data_frame
 
     def clear_container(self):

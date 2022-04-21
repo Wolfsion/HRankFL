@@ -79,7 +79,6 @@ def mkdir_save(obj, f):
 def pickle_load(f):
     with open(f, "rb") as opened_f:
         obj = pickle.load(opened_f)
-        opened_f.close()
     return obj
 
 

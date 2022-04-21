@@ -48,6 +48,7 @@ class PathGather(ABC):
 
 class HRankPathGather(PathGather):
     vgg_pt = 'vgg_16_bn.pt'
+    resnet_pt = 'resnet_56.pt'
 
     def __init__(self, model: str, dataset: str, images: str) -> None:
         super().__init__(model, dataset, images)

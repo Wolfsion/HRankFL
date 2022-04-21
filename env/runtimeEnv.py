@@ -15,6 +15,7 @@ batch_size = 32
 MAX_HOOK_LAYER = 50
 
 valid_limit = 3
+retrain_limit = 300
 limit = 5 
 arch = "vgg16"
 

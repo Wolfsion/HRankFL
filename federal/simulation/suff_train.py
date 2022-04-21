@@ -12,14 +12,17 @@ from utils.Visualizer import VisBoard
 from utils.DataExtractor import Extractor
 from utils.pathHandler import store
 import math
+import time
+
 
 def vis_log():
     vis = VisBoard()
     vis.double_vars_dist('I', 'k')
 
-def init_datasets():
 
+def init_datasets():
     get_data(DataSetType.ImageNet, data_type="train")
+
 
 def init_dataloader():
     loader = get_data_loader(DataSetType.CIFAR10, data_type="train",
@@ -29,20 +32,21 @@ def init_dataloader():
     print(inputs)
     print(label)
 
+
 def test_hrank():
-    loader = get_data_loader(DataSetType.CIFAR10, data_type="train",
-                             batch_size=32, shuffle=True,
-                             num_workers=0, pin_memory=True)
+    # loader = get_data_loader(DataSetType.CIFAR10, data_type="train",
+    #                          batch_size=32, shuffle=True,
+    #                          num_workers=0, pin_memory=False)
     test_loader = get_data_loader(DataSetType.CIFAR10, data_type="test", batch_size=32,
-                                  shuffle=True, num_workers=0, pin_memory=True)
+                                  shuffle=True, num_workers=0, pin_memory=False)
 
     hrank_obj = VGG16HRank(modelUtil.vgg_16_bn(ORIGIN_CP_RATE))
     hrank_obj.wrapper.load_checkpoint(file_repo.model(True))
-    hrank_obj.get_rank_beta(test_loader)
     # hrank_obj.get_rank(test_loader)
     hrank_obj.init_cp_model(vgg16_candidate_rate)
     hrank_obj.load_params()
     hrank_obj.valid_performance(test_loader, simp=True)
+
 
 def test_interval():
     loader = get_data_loader(DataSetType.CIFAR10, data_type="train",
@@ -56,9 +60,8 @@ def test_interval():
     for i in range(1000):
         GLOBAL_LOGGER.info(f"Epoch{i} Train...")
         hrank_obj.learn_run(loader)
-        if i % 10 == 0 and i != 0:
-            hrank_obj.get_rank_beta(test_loader)
-            # hrank_obj.get_rank(test_loader)
+        if hrank_obj.last_acc >= 40 or hrank_obj.last_acc >= 60 or hrank_obj.last_acc >= 80:
+            hrank_obj.get_rank(test_loader)
             hrank_obj.init_cp_model(vgg16_candidate_rate)
             hrank_obj.load_params()
             hrank_obj.valid_performance(test_loader, simp=True)
@@ -66,6 +69,7 @@ def test_interval():
     GLOBAL_LOGGER.info('Test Loader------')
     hrank_obj.wrapper.valid_performance(test_loader)
     hrank_obj.interrupt_disk('single.snap')
+
 
 def vgg16_cifar10_single_convergence():
     list_ranks = []
@@ -148,8 +152,7 @@ def union_convergence():
 
         for idx in range(num_slices):
             hrank_objs[idx].restore_mem(union_dict)
-            hrank_objs[idx].adjust_lr(math.pow(STEP_DECAY, (client_per_round-1)*union_train_limit))
-
+            hrank_objs[idx].adjust_lr(math.pow(STEP_DECAY, (client_per_round - 1) * union_train_limit))
 
         # hrank_objs[0].get_rank_beta(test_loader)
         # interval.push_simp_container(deepcopy(hrank_objs[0].rank_dict))
@@ -188,7 +191,8 @@ def test_checkpoint():
 
 
 def main():
-    test_hrank()
+    # test_hrank()
+    test_interval()
     # test_interval()
     # vgg16_cifar10_single_convergence()
     # union_convergence()

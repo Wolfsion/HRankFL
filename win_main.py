@@ -5,6 +5,7 @@ from matplotlib import pyplot as plt
 
 from dl.data.dataProvider import get_data
 from env.preEnv import DataSetType
+from utils.Visualizer import VisBoard
 
 
 def cifar10_100part_noniid():
@@ -49,5 +50,10 @@ def cifar10_100part_noniid_shards():
     plt.tight_layout()
     plt.savefig(f"res/images/cifar10_shards_dir_0.3_10clients.png", dpi=400)
 
+def acc_loss():
+    vis = VisBoard()
+    vis.single_var_sequence('A')
+
+
 if __name__ == '__main__':
-    cifar10_100part_noniid_shards()
+    acc_loss()

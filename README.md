@@ -66,6 +66,8 @@ flowchart TB
 
 + args&runtimeEnv：command和json配置协调
 
++ vhrank：load_params()加载所有参数，并非只有卷积层权重
+
   
 
 + fltrain：实现联邦学习过程

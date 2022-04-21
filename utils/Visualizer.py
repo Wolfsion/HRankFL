@@ -105,10 +105,12 @@ class VisBoard:
     def single_var_sequence(self, axis: str, form: str = 'k'):
         df, indices, mode = self.init_graph_contex(axis, form)
         SINGLE = 0
-        sns.lineplot(data=df, x="index",
-                     y=self.KEYS[indices[SINGLE]],
-                     ci=None, hue="class")
-        plt.savefig(file_repo.img(f"{self.KEYS[indices[SINGLE]]}_sequencer chart"))
+        index = [10*num for num in list(df.index)]
+        sns.lineplot(x=index,
+                     y=df[self.KEYS[indices[SINGLE]]],
+                     ci=None)
+        text_info('Top-Acc1 Loss', 'FL Round', 'Acc/%')
+        plt.savefig(file_repo.img(f"{self.KEYS[indices[SINGLE]]}_sequencer_chart"))
 
     def double_vars_relation(self, axis: str, form: str):
         df, indices, mode = self.init_graph_contex(axis, form)

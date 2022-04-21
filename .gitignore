@@ -18,3 +18,7 @@ dl/compress/trash
 dl/model/trash
 
 sync.cmd
+test.pt
+ltest.pt
+
+*.out

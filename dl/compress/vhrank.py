@@ -147,6 +147,7 @@ class HRank(ABC):
 
         self.curt_dict = self.wrapper.model.state_dict()
         self.curt_inputs = total
+        self.last_acc = 100. * correct / total
 
     def feed_run(self, loader: tdata.DataLoader):
         test_loss = 0
@@ -197,7 +198,7 @@ class HRank(ABC):
         if simp:
             wrapper.valid_performance_simp(loader, self.last_acc)
         else:
-            wrapper.valid_performance(loader)
+            self.wrapper.valid_performance(loader)
 
     @abstractmethod
     def get_rank(self, loader: tdata.DataLoader):
@@ -260,7 +261,6 @@ class VGG16HRank(HRank):
 
     def deserialize_rank(self):
         for cov_id in enumerate(self.relu_cfg):
-            GLOBAL_LOGGER.info('loading rank from: ' + file_repo.rank_dir())
             rank = np.load(file_repo.rank())
             self.rank_dict[cov_id] = rank
         file_repo.reset_rank_index()
@@ -280,7 +280,7 @@ class VGG16HRank(HRank):
                 name = name.replace('module.', '')
 
             if isinstance(module, nn.Conv2d):
-
+                # self.cp_model_sd[name + '.bias'] = osd[name + '.bias']
                 ori_weight = osd[name + '.weight']
                 cur_weight = self.cp_model_sd[name + '.weight']
                 ori_filter_num = ori_weight.size(0)
@@ -318,10 +318,16 @@ class VGG16HRank(HRank):
                     self.cp_model_sd[name + '.weight'] = ori_weight
                     last_select_index = None
 
+            # elif isinstance(module, nn.Linear):
+            #     self.cp_model_sd[name + '.weight'] = osd[name + '.weight']
+            #     self.cp_model_sd[name + '.bias'] = osd[name + '.bias']
+
         self.cp_model.load_state_dict(self.cp_model_sd)
+        torch.save(self.cp_model.state_dict(), 'test.pt')
 
     def init_cp_model(self, pruning_rate: List[float]):
         self.cp_model = modelUtil.vgg_16_bn(pruning_rate)
+        modelUtil.initialize(self.cp_model)
         self.cp_model_sd = self.cp_model.state_dict()
 
     def adjust_lr(self, factor: float):

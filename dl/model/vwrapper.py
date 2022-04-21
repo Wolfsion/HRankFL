@@ -100,11 +100,10 @@ class VWrapper:
             self.optimizer = optim
             self.lr_scheduler = scheduler
 
-        self.prunable_layers = []
 
     def use_default_optim(self):
-        # self.optimizer = SGD(self.model.parameters(), lr=INIT_LR)
-        self.optimizer = optim.SGD(self.model.parameters(), lr=0.1, momentum=0.9, weight_decay=1e-5)
+        self.optimizer = SGD(self.model.parameters(), lr=INIT_LR)
+        # self.optimizer = optim.SGD(self.model.parameters(), lr=0.1, momentum=0.9, weight_decay=1e-5)
         self.lr_scheduler = lr_scheduler.StepLR(self.optimizer, step_size=1,
                                                 gamma=0.5 ** (1 / LR_HALF_LIFE))
 
@@ -141,12 +140,13 @@ class VWrapper:
         return test_loss, correct
 
     def zero_grad(self):
-        self.model.zero_grad()
+        self.optimizer.zero_grad()
 
     def optim_step(self):
         self.optimizer.step()
         if self.lr_scheduler is not None:
             self.lr_scheduler.step()
+        self.optimizer.zero_grad()
 
     def get_last_lr(self):
         if self.lr_scheduler is None:
@@ -170,7 +170,7 @@ class VWrapper:
 
     # !
     def load_checkpoint(self, path: str, model_key: str = 'state_dict'):
-        checkpoint = modelUtil.pickle_load(path)
+        checkpoint = torch.load(path, map_location=torch.device('cpu'))
         assert model_key in checkpoint.keys(), self.ERROR_MESS1
         self.device.load_model(checkpoint[model_key])
 
@@ -221,16 +221,19 @@ class VWrapper:
         correct = 0
         total = 0
 
-        with torch.no_grad():
-            for batch_idx, (inputs, targets) in enumerate(loader):
-                if batch_idx >= valid_limit:
-                    break
-                loss, cort = self.step(inputs, targets)
-                test_loss += loss
-                correct += cort
-                total += targets.size(0)
-        GLOBAL_LOGGER.info('Pruned Acc: %.3f%% (%d/%d)' % (100. * correct / total, correct, total))
-        GLOBAL_LOGGER.info('#Acc:%.3f%%#' % ((100. * correct / total) - last_acc))
+        # with torch.no_grad():
+        for batch_idx, (inputs, targets) in enumerate(loader):
+            if batch_idx >= retrain_limit:
+                break
+            loss, cort = self.step(inputs, targets, True)
+            test_loss += loss
+            correct += cort
+            total += targets.size(0)
+            GLOBAL_LOGGER.info('#Rate:%d#' % batch_idx)
+            GLOBAL_LOGGER.info('[%d]#Interval:%.3f%%#' % last_acc)
+            GLOBAL_LOGGER.info('[%d]#Acc:%.3f%%# (%d/%d)'
+                               % (batch_idx, 100. * cort / targets.size(0), cort, targets.size(0)))
 
-    def get_prunable_layers(self):
-        pass
+        # GLOBAL_LOGGER.info('Pruned Acc: %.3f%% (%d/%d)' % (100. * correct / total, correct, total))
+        # GLOBAL_LOGGER.info('#Acc:%.3f%%#' % ((100. * correct / total) - last_acc))
+
