@@ -7,7 +7,7 @@ res/vgg/*
 res/milestone/ranks/*
 res/milestone/temp/ranks.ret
 logs/*
-test.pt
+res/milestone/test.pt
 
 # debug file
 testProc.py
@@ -18,7 +18,8 @@ dl/compress/trash
 dl/model/trash
 
 sync.cmd
-test.pt
-ltest.pt
+res/milestone/test.pt
+res/milestone/ltest.pt
 
 *.out
+*.log

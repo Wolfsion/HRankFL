@@ -40,7 +40,7 @@ class Extractor:
     CLASS_COL_NAME = "class"
     CURRENT_CLASS_NAME = "VGG16"
     # log_path = 'logs/hrankFL.log'
-    log_path = 'inter.out'
+    log_path = 'sim.out'
     KEYS = ['FLOPs', 'Acc', 'Interval', 'Rate']
     REG_PATTERNS = [r'(?<=#FLOPs:)[^\#]+(?=#)',
                     r'(?<=#Acc:)[^\#]+(?=#)',
@@ -59,8 +59,11 @@ class Extractor:
                 for idx in indices:
                     matches = re.finditer(self.REG_PATTERNS[idx], str(line), re.M)
                     for ma in matches:
-                        self.info_vars.flash(self.KEYS[idx], float(ma.group()[:-1]))
-                        self.info_vars.flash(self.CLASS_COL_NAME, self.CURRENT_CLASS_NAME)
+                        if ma.group().find('%') != -1:
+                            self.info_vars.flash(self.KEYS[idx], float(ma.group()[:-1]))
+                        else:
+                            self.info_vars.flash(self.KEYS[idx], float(ma.group()))
+                        # self.info_vars.flash(self.CLASS_COL_NAME, self.CURRENT_CLASS_NAME)
                         self.rows += 1
 
     # +-------+-------+-----+----------+------+-------+

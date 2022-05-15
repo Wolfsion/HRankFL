@@ -84,7 +84,7 @@ class VWrapper:
     ERROR_MESS1 = "Checkpoint do not find model_key attribute"
 
     def __init__(self, model: nn.Module, loss=binary_cross_entropy_with_logits,
-                 optim: Optimizer = None, scheduler=None,
+                 optimizer: Optimizer = None, scheduler=None,
                  device: vdevice.VADevice = None) -> None:
         self.model = model
         self.loss_func = loss
@@ -94,18 +94,19 @@ class VWrapper:
             self.device = vdevice.VADevice(True, gpu)
         self.model = self.device.bind_model(self.model)
 
-        if optim is None:
+        if optimizer is None:
             self.use_default_optim()
         else:
-            self.optimizer = optim
+            self.optimizer = optimizer
             self.lr_scheduler = scheduler
 
-
     def use_default_optim(self):
-        self.optimizer = SGD(self.model.parameters(), lr=INIT_LR)
-        # self.optimizer = optim.SGD(self.model.parameters(), lr=0.1, momentum=0.9, weight_decay=1e-5)
+        # self.optimizer = SGD(self.model.parameters(), lr=INIT_LR)
+        self.optimizer = optim.SGD(self.model.parameters(), lr=0.1, momentum=0.9, weight_decay=1e-5)
+        # self.lr_scheduler = lr_scheduler.StepLR(self.optimizer, step_size=1,
+        #                                         gamma=0.5 ** (1 / LR_HALF_LIFE))
         self.lr_scheduler = lr_scheduler.StepLR(self.optimizer, step_size=1,
-                                                gamma=0.5 ** (1 / LR_HALF_LIFE))
+                                                gamma=0.5 ** (1 / QUICK_LR_HALF_LIFE))
 
     # def step(self, inputs, labels):
     #     self.zero_grad()
@@ -118,7 +119,6 @@ class VWrapper:
 
     def step(self, inputs, labels, train=False):
         if train:
-            self.zero_grad()
             self.model.train()
         else:
             self.model.eval()
@@ -129,24 +129,20 @@ class VWrapper:
         pred = self.model(inputs)
         loss = self.loss_func(pred, labels)
         if train:
-            loss.backward()
-            self.optim_step()
+            self.optim_step(loss)
         test_loss += loss.item()
 
         _, predicted = pred.max(1)
         _, targets = labels.max(1)
         correct += predicted.eq(targets).sum().item()
-
         return test_loss, correct
 
-    def zero_grad(self):
+    def optim_step(self, loss: torch.Tensor):
         self.optimizer.zero_grad()
-
-    def optim_step(self):
+        loss.backward()
         self.optimizer.step()
         if self.lr_scheduler is not None:
             self.lr_scheduler.step()
-        self.optimizer.zero_grad()
 
     def get_last_lr(self):
         if self.lr_scheduler is None:

@@ -107,11 +107,11 @@ class IIDSampler(LSampler):
 class CF10NIIDSampler(LSampler):
     ERROR_MESS1 = "The idx_selected is null."
 
-    def __init__(self, num_slices, num_round, data_per_client, client_selection: bool,
+    def __init__(self, num_slices, max_num_round, data_per_client, client_selection: bool,
                  client_per_round=None, seed=1, datatype=DataSetType.CIFAR10):
         self.seed = seed
         self.idx_selected = []
-        super().__init__(datatype, num_slices, num_round, data_per_client,
+        super().__init__(datatype, num_slices, max_num_round, data_per_client,
                          client_selection, client_per_round)
 
     def getIndices(self, datatype, num_slices, num_round, data_per_client, client_selection, client_per_round):

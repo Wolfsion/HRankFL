@@ -29,8 +29,9 @@ def init_dataloader():
                              batch_size=32, shuffle=True,
                              num_workers=0, pin_memory=True)
     inputs, label = next(iter(loader))
-    print(inputs)
-    print(label)
+    hrank_obj = VGG16HRank(modelUtil.vgg_16_bn(vgg16_candidate_rate))
+    hrank_obj.valid_performance(loader)
+
 
 
 def test_hrank():
@@ -41,11 +42,19 @@ def test_hrank():
                                   shuffle=True, num_workers=0, pin_memory=False)
 
     hrank_obj = VGG16HRank(modelUtil.vgg_16_bn(ORIGIN_CP_RATE))
-    hrank_obj.wrapper.load_checkpoint(file_repo.model(True))
+    # hrank_obj.wrapper.load_checkpoint(file_repo.model(True))
     # hrank_obj.get_rank(test_loader)
-    hrank_obj.init_cp_model(vgg16_candidate_rate)
-    hrank_obj.load_params()
-    hrank_obj.valid_performance(test_loader, simp=True)
+    hrank_obj.valid_performance(test_loader)
+
+
+    # hrank_obj.init_cp_model(vgg16_candidate_rate)
+    # hrank_obj.load_params()
+    # hrank_obj.valid_performance(test_loader, simp=True)
+    # inputs, label = next(iter(test_loader))
+    # model = hrank_obj.cp_model
+    # from thop import profile
+    # flops, params = profile(model, inputs=(inputs,))
+    # print(flops, "=====", params)
 
 
 def test_interval():
@@ -98,11 +107,11 @@ def vgg16_cifar10_single_convergence():
 
     rank_first = True
 
-    # model1 = modelUtil.vgg_16_bn(ORIGIN_CP_RATE)
-    model2 = modelUtil.vgg_11_bn(ORIGIN_CP_RATE)
+    model1 = modelUtil.vgg_16_bn(ORIGIN_CP_RATE)
+    # model2 = modelUtil.vgg_11_bn(ORIGIN_CP_RATE)
 
-    hrank_obj = VGG16HRank(model2)
-    for i in range(1000):
+    hrank_obj = VGG16HRank(model1)
+    for i in range(450):
         GLOBAL_LOGGER.info(f"Epoch{i} Train...")
         hrank_obj.learn_run(loader)
         # if i > 100:
@@ -114,6 +123,11 @@ def vgg16_cifar10_single_convergence():
         #         hrank_obj.get_rank_beta(loader)
         #         interval.push_simp_container(deepcopy(hrank_obj.rank_dict))
         #         GLOBAL_LOGGER.info(f"Epoch:{i},Pruning is proper?:{interval.is_timing_simple()}")
+
+    hrank_obj.init_cp_model(vgg16_candidate_rate)
+    hrank_obj.load_params()
+    # hrank_obj.valid_performance(test_loader)
+    hrank_obj.valid_performance(test_loader, simp=True)
 
     GLOBAL_LOGGER.info('Test Loader------')
     hrank_obj.wrapper.valid_performance(test_loader)
@@ -206,9 +220,9 @@ def test_checkpoint():
 
 def main():
     # test_hrank()
-    test_interval()
     # test_interval()
-    # vgg16_cifar10_single_convergence()
+    # test_interval()
+    vgg16_cifar10_single_convergence()
     # union_convergence()
     # # vis_log()
-    # # init_dataloader()
+    # init_dataloader()

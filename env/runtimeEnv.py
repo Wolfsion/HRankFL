@@ -15,7 +15,7 @@ batch_size = 32
 MAX_HOOK_LAYER = 50
 
 valid_limit = 3
-retrain_limit = 300
+retrain_limit = 50
 limit = 5 
 arch = "vgg16"
 
@@ -35,6 +35,7 @@ workers = 10
 # compress rate
 compress_rate = [0.]*100
 candidate_rate = [0.45]*7 + [0.78]*5
+zero_rate = compress_rate
 
 # vgg16_bn
 vgg16_candidate_rate = [0.45]*7 + [0.78]*5

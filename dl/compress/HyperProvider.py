@@ -15,7 +15,7 @@ class IntervalProvider:
     NULL_NUM = -11111
     ERROR_MESS1 = "Call is_timing_simple, the len of ranks_dict list must be 2."
 
-    def __init__(self, tiny_const: int = 0.15, sum_limit: int = 0.1):
+    def __init__(self, tiny_const: float = 0.15, sum_limit: float = 0.1):
         self.tiny_limit = tiny_const
         self.sum_limit = sum_limit
         self.cont_list = []

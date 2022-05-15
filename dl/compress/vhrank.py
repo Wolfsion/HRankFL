@@ -194,8 +194,8 @@ class HRank(ABC):
         self.wrapper.model.load_state_dict(state_dict)
 
     def valid_performance(self, loader: tdata.DataLoader, simp: bool = False):
-        wrapper = VWrapper(self.cp_model)
         if simp:
+            wrapper = VWrapper(self.cp_model)
             wrapper.valid_performance_simp(loader, self.last_acc)
         else:
             self.wrapper.valid_performance(loader)

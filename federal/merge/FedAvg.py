@@ -1,6 +1,7 @@
 from typing import List
 from collections import OrderedDict
 
+
 class FedAvg:
     ERROR_MESS1 = "The weights size must be equal the size of the clients_dicts"
 

@@ -38,6 +38,7 @@ class VisBoard:
     AXIS_KEYS = ['F', 'A', 'I', 'R']
     KEYS = ['FLOPs', 'Acc', 'Interval', 'Rate']
     SNS_STYLE = "darkgrid"
+    PALETTE = "rainbow"
 
     HIST_FLAG = 0
     KDE_FLAG = 1
@@ -47,6 +48,7 @@ class VisBoard:
         self.io = Extractor()
         # figSize and font
         sns.set_style(self.SNS_STYLE)
+        # sns.set_palette(self.PALETTE)
 
     def check_axis_form(self, axis: str, form: str):
         assert len(axis) < 5, self.ERROR_MESS1
@@ -102,14 +104,29 @@ class VisBoard:
                         hue="class")
         plt.savefig(file_repo.img(f"{self.KEYS[indices[SINGLE]]}_dist"))
 
+    # def single_var_sequence(self, axis: str, form: str = 'k'):
+    #     df, indices, mode = self.init_graph_contex(axis, form)
+    #     SINGLE = 0
+    #     sns.lineplot(x=df.index,
+    #                  y=df[self.KEYS[indices[SINGLE]]],
+    #                  ci=None)
+    #     plt.savefig(file_repo.img(f"{self.KEYS[indices[SINGLE]]}_sequencer_chart"))
+
     def single_var_sequence(self, axis: str, form: str = 'k'):
+        # df, indices, mode = self.init_graph_contex(axis, form)
+        # SINGLE = 0
+        # sns.lineplot(data=df, x=self.KEYS[indices[0]],
+        #              y=self.KEYS[indices[1]],
+        #              ci=None, hue="Interval")
+        # text_info('Top-Acc1 Retrain', 'Retrain batch', 'Acc/%')
+        # plt.savefig(file_repo.img(f"{self.KEYS[indices[SINGLE]]}_sequencer_chart"))
+
         df, indices, mode = self.init_graph_contex(axis, form)
         SINGLE = 0
-        index = [10*num for num in list(df.index)]
-        sns.lineplot(x=index,
+        sns.lineplot(x=df.index,
                      y=df[self.KEYS[indices[SINGLE]]],
                      ci=None)
-        text_info('Top-Acc1 Loss', 'FL Round', 'Acc/%')
+        text_info('pairwise_distances', 'Round', 'Magnitude')
         plt.savefig(file_repo.img(f"{self.KEYS[indices[SINGLE]]}_sequencer_chart"))
 
     def double_vars_relation(self, axis: str, form: str):
