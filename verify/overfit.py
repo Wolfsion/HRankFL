@@ -16,7 +16,7 @@ def union_convergence():
     sampler = samplers.CF10NIIDSampler(num_slices, 100, data_per_client_epoch, True, client_per_round)
     workers_loaders = get_data_loaders(DataSetType.CIFAR10, data_type="train",
                                        batch_size=batch_size, users_indices=sampler.users_indices,
-                                       num_workers=0, pin_memory=False)
+                                       num_workers=0, pin_memory=True)
     test_loader = get_data_loader(DataSetType.CIFAR10, data_type="test", batch_size=batch_size,
                                   shuffle=True, num_workers=0, pin_memory=True)
 

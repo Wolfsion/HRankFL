@@ -112,12 +112,13 @@ def get_data_loader(name: DataSetType, data_type: str, batch_size=None, shuffle:
 
 
 def get_data_loaders(name: DataSetType, data_type: str, batch_size: int, users_indices: dict,
-                    shuffle: bool = True, transform=None, target_transform=None,
-                    num_workers=8, pin_memory=False) -> dict:
+                     shuffle: bool = True, transform=None, target_transform=None,
+                     num_workers=8, pin_memory=False) -> dict:
     assert data_type in ["train", "val", "test"]
     dataset = get_data(name, data_type=data_type, transform=transform, target_transform=target_transform)
     loaders = dict()
-    for k, v in users_indices:
+    for k, v in users_indices.items():
         sub_set = torch.utils.data.Subset(dataset, v)
-        loaders[k] = DataLoader(sub_set, batch_size=batch_size, shuffle=shuffle)
+        loaders[k] = DataLoader(sub_set, batch_size=batch_size, shuffle=shuffle,
+                                num_workers=num_workers, pin_memory=pin_memory)
     return loaders
