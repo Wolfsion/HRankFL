@@ -2,7 +2,7 @@ import math
 
 from dl.compress.vhrank import VGG16HRank
 from dl.data import samplers
-from dl.data.dataProvider import get_data_loader
+from dl.data.dataProvider import get_data_loader, get_data_loaders
 from dl.model import modelUtil
 from federal.merge.FedAvg import FedAvg
 
@@ -14,14 +14,15 @@ def union_convergence():
     list_dict = []
     fedavg = FedAvg()
     sampler = samplers.CF10NIIDSampler(num_slices, 100, data_per_client_epoch, True, client_per_round)
-
-    workers_loader = get_data_loader(DataSetType.CIFAR10, data_type="train",
-                                     batch_size=batch_size, shuffle=False,
-                                     sampler=sampler, num_workers=0, pin_memory=True)
+    workers_loaders = get_data_loaders(DataSetType.CIFAR10, data_type="train",
+                                       batch_size=batch_size, users_indices=sampler.users_indices,
+                                       num_workers=0, pin_memory=False)
     test_loader = get_data_loader(DataSetType.CIFAR10, data_type="test", batch_size=batch_size,
                                   shuffle=True, num_workers=0, pin_memory=True)
 
     hrank_objs = [VGG16HRank(modelUtil.vgg_16_bn(ORIGIN_CP_RATE)) for _ in range(num_slices)]
+
+    curt_train_batch = 0
 
     for rnd in range(10):
         GLOBAL_LOGGER.info(f"FL turn:{rnd}...")
@@ -29,14 +30,15 @@ def union_convergence():
 
         for idx in curt_selected[rnd]:
             GLOBAL_LOGGER.info(f"Train from device:{idx}")
-            hrank_objs[idx].learn_run(workers_loader)
+            for i in range(local_epoch):
+                curt_train_batch += hrank_objs[idx].learn_run(workers_loaders[idx])
             list_dict.append(hrank_objs[idx].interrupt_mem())
 
         union_dict = fedavg.merge_dict(list_dict, [1 for _ in range(client_per_round)])
 
         for idx in range(num_slices):
             hrank_objs[idx].restore_mem(union_dict)
-            hrank_objs[idx].adjust_lr(math.pow(STEP_DECAY, (client_per_round - 1) * union_train_limit))
+            hrank_objs[idx].adjust_lr(math.pow(STEP_DECAY, curt_train_batch))
 
         list_dict.clear()
 

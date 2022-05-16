@@ -10,7 +10,9 @@ from utils.pathHandler import HRankPathGather
 # gpu = [0, 1]
 gpu = [0]
 train_limit = 1000
-union_train_limit = 10
+# union_train_limit = 10
+union_train_limit = 9999
+local_epoch = 10
 batch_size = 32
 MAX_HOOK_LAYER = 50
 

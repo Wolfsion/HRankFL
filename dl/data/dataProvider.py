@@ -3,6 +3,7 @@ import torchvision
 import torchvision.transforms as transforms
 from os.path import join
 
+from dl.compress.HyperProvider import DatasetSplit
 from env.preEnv import *
 from env.runtimeEnv import *
 from dl.data.transform import OneHot, DataToTensor
@@ -31,7 +32,7 @@ class DataLoader(torch.utils.data.DataLoader):
         return len(self.dataset)
 
 
-def get_data(dataset: DataSetType, data_type, transform=None, target_transform=None, user_list=None):
+def get_data(dataset: DataSetType, data_type, transform=None, target_transform=None):
     if dataset == DataSetType.FEMNIST:
         pass
 
@@ -90,16 +91,16 @@ def get_data(dataset: DataSetType, data_type, transform=None, target_transform=N
         raise ValueError("{} dataset is not supported.".format(dataset))
 
 
-def get_data_loader(name: DataSetType, data_type: str, batch_size=None, shuffle: bool = False, sampler=None, transform=None,
-                    target_transform=None, subset_indices=None, num_workers=8, pin_memory=False, user_list=None):
+def get_data_loader(name: DataSetType, data_type: str, batch_size=None, shuffle: bool = False,
+                    sampler=None, transform=None, target_transform=None, subset_indices=None,
+                    num_workers=8, pin_memory=False):
     assert data_type in ["train", "val", "test"]
     if data_type == "train":
         assert batch_size is not None, "Batch size for training data is required"
     if shuffle is True:
         assert sampler is None, "Cannot shuffle when using sampler"
 
-    data = get_data(name, data_type=data_type, transform=transform, target_transform=target_transform,
-                    user_list=user_list)
+    data = get_data(name, data_type=data_type, transform=transform, target_transform=target_transform)
 
     if subset_indices is not None:
         data = torch.utils.data.Subset(data, subset_indices)
@@ -108,3 +109,15 @@ def get_data_loader(name: DataSetType, data_type: str, batch_size=None, shuffle:
 
     return DataLoader(data, batch_size=batch_size, shuffle=shuffle, sampler=sampler, num_workers=num_workers,
                       pin_memory=pin_memory)
+
+
+def get_data_loaders(name: DataSetType, data_type: str, batch_size: int, users_indices: dict,
+                    shuffle: bool = True, transform=None, target_transform=None,
+                    num_workers=8, pin_memory=False) -> dict:
+    assert data_type in ["train", "val", "test"]
+    dataset = get_data(name, data_type=data_type, transform=transform, target_transform=target_transform)
+    loaders = dict()
+    for k, v in users_indices:
+        sub_set = torch.utils.data.Subset(dataset, v)
+        loaders[k] = DataLoader(sub_set, batch_size=batch_size, shuffle=shuffle)
+    return loaders

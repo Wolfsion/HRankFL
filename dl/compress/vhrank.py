@@ -98,7 +98,7 @@ class HRank(ABC):
         self.map_dict = {}
         file_repo.reset_rank_index()
 
-    def learn_run(self, loader: tdata.DataLoader):
+    def learn_run(self, loader: tdata.DataLoader) -> int:
         test_loss = 0
         correct = 0
         total = 0
@@ -129,8 +129,8 @@ class HRank(ABC):
                 batch_idx += 1
 
             except StopIteration:
-                self.valid_performance(loader)
-                self.interrupt_disk()
+                # self.valid_performance(loader)
+                # self.interrupt_disk()
                 GLOBAL_LOGGER.info('The loader is over.')
                 break
         # for batch_idx, (inputs, targets) in enumerate(loader):
@@ -148,6 +148,7 @@ class HRank(ABC):
         self.curt_dict = self.wrapper.model.state_dict()
         self.curt_inputs = total
         self.last_acc = 100. * correct / total
+        return batch_idx
 
     def feed_run(self, loader: tdata.DataLoader):
         test_loss = 0

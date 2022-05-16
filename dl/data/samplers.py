@@ -10,6 +10,14 @@ from env.preEnv import *
 from dl.data.dataProvider import get_data
 
 
+def get_dict_indices(num_slices, seed: int = 2022):
+    cifar10 = get_data(DataSetType.CIFAR10, data_type="train")
+    hetero_dir_part = CIFAR10Partitioner(cifar10.targets, num_slices,
+                                         balance=None, partition="dirichlet",
+                                         dir_alpha=0.3, seed=seed)
+    return hetero_dir_part.client_dict
+
+
 class NSampler(Sampler):
     ERROR_MESS1 = "The dataset is not supported."
     ERROR_MESS2 = "The index is out of bound."
@@ -50,6 +58,7 @@ class LSampler(Sampler, ABC):
     def __init__(self, datatype: DataSetType, num_slices, num_round, data_per_client,
                  client_selection, client_per_round=None):
         self.indices = []
+        self.users_indices = dict()
         self.getIndices(datatype, num_slices, num_round, data_per_client,
                         client_selection, client_per_round)
 
@@ -120,14 +129,14 @@ class CF10NIIDSampler(LSampler):
         hetero_dir_part = CIFAR10Partitioner(cifar10.targets, num_slices,
                                              balance=None, partition="dirichlet",
                                              dir_alpha=0.3, seed=self.seed)
-        tmp_indices = hetero_dir_part.client_dict
+        self.users_indices = hetero_dir_part.client_dict
         # shards_part = CIFAR10Partitioner(cifar10.targets,
         #                                  num_slices,
         #                                  balance=None,
         #                                  partition="shards",
         #                                  num_shards=200,
         #                                  seed=self.seed)
-        # tmp_indices = shards_part.client_dict
+        # self.users_indices = shards_part.client_dict
         range_partition = list(range(num_slices))
         new_list_ind = [[] for _ in range(num_slices)]
 
@@ -144,7 +153,7 @@ class CF10NIIDSampler(LSampler):
                 selected_client_idx = range_partition
 
             for client_idx in selected_client_idx:
-                ind = tmp_indices[client_idx]
+                ind = self.users_indices[client_idx]
                 pos = list_pos[client_idx]
                 while len(new_list_ind[client_idx]) < pos + data_per_client:
                     new_list_ind[client_idx].extend(ind)
