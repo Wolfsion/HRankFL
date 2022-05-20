@@ -108,7 +108,7 @@ def get_data_loader(name: DataSetType, data_type: str, batch_size=None, shuffle:
         batch_size = len(data)
 
     return DataLoader(data, batch_size=batch_size, shuffle=shuffle, sampler=sampler, num_workers=num_workers,
-                      pin_memory=pin_memory)
+                      pin_memory=pin_memory, drop_last=True)
 
 
 def get_data_loaders(name: DataSetType, data_type: str, batch_size: int, users_indices: dict,
@@ -120,5 +120,6 @@ def get_data_loaders(name: DataSetType, data_type: str, batch_size: int, users_i
     for k, v in users_indices.items():
         sub_set = torch.utils.data.Subset(dataset, v)
         loaders[k] = DataLoader(sub_set, batch_size=batch_size, shuffle=shuffle,
-                                num_workers=num_workers, pin_memory=pin_memory)
+                                num_workers=num_workers, pin_memory=pin_memory,
+                                drop_last=True)
     return loaders

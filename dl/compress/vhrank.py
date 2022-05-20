@@ -70,10 +70,13 @@ class HRank(ABC):
             self.map_dict[id(module)] = self.curt_index
             self.curt_index += 1
 
-        self.feature_result_list[self.map_dict[id(module)]] = self.feature_result_list[self.map_dict[id(module)]] * self.total_list[self.map_dict[id(module)]]
-        self.feature_result_list[self.map_dict[id(module)]] = self.feature_result_list[self.map_dict[id(module)]] + ranks
+        self.feature_result_list[self.map_dict[id(module)]] = self.feature_result_list[self.map_dict[id(module)]] * \
+                                                              self.total_list[self.map_dict[id(module)]]
+        self.feature_result_list[self.map_dict[id(module)]] = self.feature_result_list[
+                                                                  self.map_dict[id(module)]] + ranks
         self.total_list[self.map_dict[id(module)]] = self.total_list[self.map_dict[id(module)]] + imgs
-        self.feature_result_list[self.map_dict[id(module)]] = self.feature_result_list[self.map_dict[id(module)]] / self.total_list[self.map_dict[id(module)]]
+        self.feature_result_list[self.map_dict[id(module)]] = self.feature_result_list[self.map_dict[id(module)]] / \
+                                                              self.total_list[self.map_dict[id(module)]]
 
     def drive_hook(self, sub_module: nn.Module, loader: tdata.DataLoader,
                    hook_id: int = None, random: bool = False):
@@ -124,9 +127,10 @@ class HRank(ABC):
             GLOBAL_LOGGER.info('Train:batch_idx:%d | Loss: %.3f | Acc: %.3f%% (%d/%d)'
                                % (batch_idx, test_loss / (batch_idx + 1), 100. * correct / total, correct, total))
 
-        self.curt_dict = self.wrapper.model.state_dict()
-        self.curt_inputs = total
-        self.last_acc = 100. * correct / total
+        if total != 0:
+            self.curt_dict = self.wrapper.model.state_dict()
+            self.curt_inputs = total
+            self.last_acc = 100. * correct / total
         return batch_idx
 
     def feed_run(self, loader: tdata.DataLoader):
@@ -203,7 +207,6 @@ class VGG16HRank(HRank):
 
         self.relu_cfg = self.wrapper.device.access_model().relucfg
         self.cov_order = 0
-
 
     def get_rank(self, loader: tdata.DataLoader = None, random: bool = False):
         if loader is None:
@@ -313,6 +316,11 @@ class VGG16HRank(HRank):
     def adjust_lr(self, factor: float):
         for param_group in self.wrapper.optimizer.param_groups:
             param_group["lr"] *= factor
+
+    def show_lr(self):
+        for param_group in self.wrapper.optimizer.param_groups:
+            GLOBAL_LOGGER.info(f"The current learning rate: {param_group['lr']}")
+
 
 class ResNet56HRank(HRank):
 

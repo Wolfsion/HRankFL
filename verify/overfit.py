@@ -24,7 +24,7 @@ def union_convergence():
 
     curt_train_batch = 0
 
-    for rnd in range(10):
+    for rnd in range(100):
         GLOBAL_LOGGER.info(f"FL turn:{rnd}...")
         curt_selected = sampler.curt_selected()
 
@@ -38,8 +38,11 @@ def union_convergence():
 
         for idx in range(num_slices):
             hrank_objs[idx].restore_mem(union_dict)
-            hrank_objs[idx].adjust_lr(math.pow(STEP_DECAY, curt_train_batch))
+            hrank_objs[idx].adjust_lr(math.pow(STEP_DECAY, curt_train_batch//10))
 
+        hrank_objs[0].show_lr()
+        GLOBAL_LOGGER.info(f"FL turn test:{rnd}...")
+        hrank_objs[0].wrapper.valid_performance(test_loader)
         list_dict.clear()
 
     GLOBAL_LOGGER.info('Test Loader------')
